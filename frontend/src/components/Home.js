@@ -130,97 +130,53 @@ function FeatureCard({ feature, loading }) {
 }
 
 function Home() {
-  const [loading, setLoading] = useState(true);
-  const [heroLoaded, setHeroLoaded] = useState(false);
-
-  // Simulate loading state
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   return (
     <Box>
       <Box
         sx={{
-          position: 'relative',
-          color: 'white',
-          pt: 8,
-          pb: 6,
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${heroBackgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           minHeight: '60vh',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          textAlign: 'center',
+          mb: 6,
         }}
       >
-        {/* Background with loading state */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            bgcolor: 'primary.main',
-            zIndex: -2,
-          }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: `linear-gradient(rgba(46, 125, 50, 0.9), rgba(46, 125, 50, 0.9)), url(${heroBackgroundImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: heroLoaded ? 1 : 0,
-            transition: 'opacity 0.5s',
-            zIndex: -1,
-          }}
-        />
-        {/* Preload hero image */}
-        <img
-          src={heroBackgroundImage}
-          alt=""
-          style={{ display: 'none' }}
-          onLoad={() => setHeroLoaded(true)}
-        />
-
-        <Container maxWidth="sm" sx={{ position: 'relative' }}>
-          <Typography
-            component="h1"
-            variant="h2"
-            align="center"
-            gutterBottom
-            sx={{ fontWeight: 'bold' }}
+        <Container>
+          <Typography variant="h2" component="h1" gutterBottom>
+            Plant Health Analysis
+          </Typography>
+          <Typography variant="h5" gutterBottom>
+            Your AI-Powered Plant Care Assistant
+          </Typography>
+          <Typography variant="subtitle1" sx={{ mb: 4 }}>
+            Version 1.0.0 - Powered by Vercel
+          </Typography>
+          <Button
+            component={Link}
+            to="/analyze"
+            variant="contained"
+            size="large"
+            startIcon={<CameraIcon />}
+            sx={{ mr: 2 }}
           >
-            Your Smart Plant Health Companion
-          </Typography>
-          <Typography variant="h5" align="center" paragraph>
-            Diagnose plant health, access farming tools, and grow with our community
-          </Typography>
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-            <Button
-              component={Link}
-              to="/analyze"
-              variant="contained"
-              size="large"
-              sx={{ 
-                bgcolor: 'white', 
-                color: 'primary.main',
-                '&:hover': {
-                  bgcolor: 'grey.100',
-                },
-                px: 4,
-                py: 1.5,
-              }}
-            >
-              Start Analyzing
-            </Button>
-          </Box>
+            Analyze Plant
+          </Button>
+          <Button
+            component={Link}
+            to="/blog"
+            variant="outlined"
+            size="large"
+            sx={{ color: 'white', borderColor: 'white' }}
+          >
+            Learn More
+          </Button>
         </Container>
       </Box>
 
