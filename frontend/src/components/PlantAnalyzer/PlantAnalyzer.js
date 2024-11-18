@@ -26,7 +26,7 @@ import {
 import {
   CameraAlt as CameraIcon,
   Close as CloseIcon,
-  LocalFlorist as PlantIcon,
+  LocalFlorist,
   WaterDrop as WaterIcon,
   WbSunny as SunIcon,
   Terrain as SoilIcon,
@@ -39,7 +39,9 @@ import {
   ExpandMore as ExpandMoreIcon,
   LocationOn as LocationIcon,
   Event as SeasonIcon,
-  Park as EcoIcon
+  Park as EcoIcon,
+  NightsStay,
+  ContentCut
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { analyzeImage } from '../../services/ml/plantAnalysisService';
@@ -101,30 +103,61 @@ const PlantAnalyzer = () => {
   };
 
   const renderHealthScore = () => (
-    <Box sx={{ position: 'relative', display: 'inline-flex', m: 2 }}>
-      <CircularProgress
-        variant="determinate"
-        value={result.healthScore}
-        size={100}
-        thickness={4}
-        sx={{
-          color: result.healthScore > 70 ? 'success.main' : 
-                result.healthScore > 40 ? 'warning.main' : 'error.main'
-        }}
-      />
-      <Box sx={{
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: 0,
-        position: 'absolute',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        <Typography variant="h6" component="div">
-          {result.healthScore}%
+    <Box sx={{ textAlign: 'center', mb: 2 }}>
+      <Box sx={{ position: 'relative', display: 'inline-flex', m: 2 }}>
+        <CircularProgress
+          variant="determinate"
+          value={result.healthAssessment?.overallHealth || 0}
+          size={100}
+          thickness={4}
+          sx={{
+            color: (result.healthAssessment?.overallHealth || 0) > 70 ? 'success.main' : 
+                  (result.healthAssessment?.overallHealth || 0) > 40 ? 'warning.main' : 'error.main'
+          }}
+        />
+        <Box sx={{
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <Typography variant="h6" component="div">
+            {result.healthAssessment?.overallHealth || 0}%
+          </Typography>
+        </Box>
+      </Box>
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          Plant Health Status
         </Typography>
+        <Grid container spacing={2}>
+          {Object.entries(result.healthAssessment?.vitalSigns || {}).map(([key, value]) => (
+            <Grid item xs={12} sm={6} key={key}>
+              <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
+                {key.replace(/([A-Z])/g, ' $1').trim()}: <Typography component="span" color="text.secondary">{value}</Typography>
+              </Typography>
+            </Grid>
+          ))}
+        </Grid>
+        {result.healthAssessment?.recommendations?.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Recommendations:
+            </Typography>
+            <List dense>
+              {result.healthAssessment.recommendations.map((rec, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon><InfoIcon /></ListItemIcon>
+                  <ListItemText primary={rec} />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        )}
       </Box>
     </Box>
   );
@@ -157,19 +190,23 @@ const PlantAnalyzer = () => {
             </Box>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Native Regions
-            </Typography>
-            <List dense>
-              {result.detailedInfo.nativeTo.map((region, index) => (
-                <ListItem key={index}>
-                  <ListItemIcon>
-                    <LocationIcon />
-                  </ListItemIcon>
-                  <ListItemText primary={region} />
-                </ListItem>
-              ))}
-            </List>
+            {result.detailedInfo?.nativeTo && result.detailedInfo.nativeTo.length > 0 && (
+              <>
+                <Typography variant="h6" gutterBottom>
+                  Native Regions
+                </Typography>
+                <List dense>
+                  {result.detailedInfo.nativeTo.map((region, index) => (
+                    <ListItem key={index}>
+                      <ListItemIcon>
+                        <LocationIcon />
+                      </ListItemIcon>
+                      <ListItemText primary={region} />
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            )}
           </Grid>
         </Grid>
       </CardContent>
@@ -189,21 +226,21 @@ const PlantAnalyzer = () => {
                 <ListItemIcon><WaterIcon /></ListItemIcon>
                 <ListItemText 
                   primary="Watering"
-                  secondary={result.careInfo.watering}
+                  secondary={result.careInfo?.watering || 'Not available'}
                 />
               </ListItem>
               <ListItem>
                 <ListItemIcon><SunIcon /></ListItemIcon>
                 <ListItemText
                   primary="Sunlight"
-                  secondary={result.careInfo.sunlight}
+                  secondary={result.careInfo?.sunlight || 'Not available'}
                 />
               </ListItem>
               <ListItem>
                 <ListItemIcon><SoilIcon /></ListItemIcon>
                 <ListItemText
                   primary="Soil"
-                  secondary={result.careInfo.soil}
+                  secondary={result.careInfo?.soil || 'Not available'}
                 />
               </ListItem>
             </List>
@@ -214,14 +251,21 @@ const PlantAnalyzer = () => {
                 <ListItemIcon><TempIcon /></ListItemIcon>
                 <ListItemText
                   primary="Temperature"
-                  secondary={result.careInfo.temperature}
+                  secondary={result.careInfo?.temperature || 'Not available'}
                 />
               </ListItem>
               <ListItem>
                 <ListItemIcon><HumidityIcon /></ListItemIcon>
                 <ListItemText
                   primary="Humidity"
-                  secondary={result.careInfo.humidity}
+                  secondary={result.careInfo?.humidity || 'Not available'}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon><InfoIcon /></ListItemIcon>
+                <ListItemText
+                  primary="Additional Care"
+                  secondary={result.careInfo?.fertilizer || 'Not available'}
                 />
               </ListItem>
             </List>
@@ -235,45 +279,86 @@ const PlantAnalyzer = () => {
     <Card sx={{ mb: 2 }}>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          Seasonal Information
+          Seasonal Care Guide
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <List dense>
-              <ListItem>
-                <ListItemIcon><SeasonIcon /></ListItemIcon>
-                <ListItemText
-                  primary="Flowering Season"
-                  secondary={result.detailedInfo.floweringSeason.join(', ') || 'Not available'}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon><SeasonIcon /></ListItemIcon>
-                <ListItemText
-                  primary="Harvest Season"
-                  secondary={result.detailedInfo.harvestSeason.join(', ') || 'Not available'}
-                />
-              </ListItem>
+              {result.seasonalInfo?.growingSeason && (
+                <ListItem>
+                  <ListItemIcon><SunIcon /></ListItemIcon>
+                  <ListItemText 
+                    primary="Growing Season"
+                    secondary={result.seasonalInfo.growingSeason.join(', ')}
+                  />
+                </ListItem>
+              )}
+              {result.seasonalInfo?.floweringSeason && (
+                <ListItem>
+                  <ListItemIcon><LocalFlorist /></ListItemIcon>
+                  <ListItemText 
+                    primary="Flowering Season"
+                    secondary={result.seasonalInfo.floweringSeason.join(', ')}
+                  />
+                </ListItem>
+              )}
+              {result.seasonalInfo?.dormancyPeriod && (
+                <ListItem>
+                  <ListItemIcon><NightsStay /></ListItemIcon>
+                  <ListItemText 
+                    primary="Dormancy Period"
+                    secondary={result.seasonalInfo.dormancyPeriod.join(', ')}
+                  />
+                </ListItem>
+              )}
             </List>
           </Grid>
           <Grid item xs={12} sm={6}>
             <List dense>
-              <ListItem>
-                <ListItemIcon><WaterIcon /></ListItemIcon>
-                <ListItemText
-                  primary="Precipitation Needs"
-                  secondary={`${result.detailedInfo.minimumPrecipitation || '?'} - ${result.detailedInfo.maximumPrecipitation || '?'} mm`}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon><TempIcon /></ListItemIcon>
-                <ListItemText
-                  primary="Temperature Range"
-                  secondary={`${result.detailedInfo.minimumTemperature || '?'}°C - ${result.detailedInfo.maximumTemperature || '?'}°C`}
-                />
-              </ListItem>
+              {result.seasonalInfo?.pruningTime && (
+                <ListItem>
+                  <ListItemIcon><ContentCut /></ListItemIcon>
+                  <ListItemText 
+                    primary="Pruning Time"
+                    secondary={result.seasonalInfo.pruningTime.join(', ')}
+                  />
+                </ListItem>
+              )}
+              {result.seasonalInfo?.fertilizingSchedule && (
+                <ListItem>
+                  <ListItemIcon><ScienceIcon /></ListItemIcon>
+                  <ListItemText 
+                    primary="Fertilizing Schedule"
+                    secondary={result.seasonalInfo.fertilizingSchedule.join(', ')}
+                  />
+                </ListItem>
+              )}
             </List>
           </Grid>
+          {result.seasonalInfo?.commonIssues && (
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Seasonal Care Tips
+              </Typography>
+              <Grid container spacing={2}>
+                {Object.entries(result.seasonalInfo.commonIssues).map(([season, issues]) => (
+                  <Grid item xs={12} sm={6} key={season}>
+                    <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
+                      {season}:
+                    </Typography>
+                    <List dense>
+                      {issues.map((issue, index) => (
+                        <ListItem key={index}>
+                          <ListItemIcon><InfoIcon /></ListItemIcon>
+                          <ListItemText primary={issue} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+          )}
         </Grid>
       </CardContent>
     </Card>
@@ -286,14 +371,14 @@ const PlantAnalyzer = () => {
       </AccordionSummary>
       <AccordionDetails>
         <Grid container spacing={2}>
-          {result.uses.medicinal && (
+          {result.uses?.medicinal && (
             <Grid item xs={12} sm={6}>
               <Typography variant="subtitle1" gutterBottom>
                 <MedicinalIcon sx={{ mr: 1 }} />
                 Medicinal Uses
               </Typography>
               <List dense>
-                {result.uses.medicinalUses.map((use, index) => (
+                {result.uses.medicinalUses?.map((use, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={use} />
                   </ListItem>
@@ -301,14 +386,14 @@ const PlantAnalyzer = () => {
               </List>
             </Grid>
           )}
-          {result.detailedInfo.edible && (
+          {result.uses?.otherUses && result.uses.otherUses.length > 0 && (
             <Grid item xs={12} sm={6}>
               <Typography variant="subtitle1" gutterBottom>
-                <FoodIcon sx={{ mr: 1 }} />
-                Edible Uses
+                <EcoIcon sx={{ mr: 1 }} />
+                Other Uses
               </Typography>
               <List dense>
-                {result.uses.edibleUses.map((use, index) => (
+                {result.uses.otherUses.map((use, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={use} />
                   </ListItem>
@@ -327,16 +412,22 @@ const PlantAnalyzer = () => {
         <Typography variant="h6">Interesting Facts</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <List dense>
-          {result.trivia.map((fact, index) => (
-            <ListItem key={index}>
-              <ListItemIcon>
-                <InfoIcon />
-              </ListItemIcon>
-              <ListItemText primary={fact} />
-            </ListItem>
-          ))}
-        </List>
+        {result.trivia?.length > 0 ? (
+          <List dense>
+            {result.trivia.map((fact, index) => (
+              <ListItem key={index}>
+                <ListItemIcon>
+                  <InfoIcon />
+                </ListItemIcon>
+                <ListItemText primary={fact} />
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No interesting facts available for this plant.
+          </Typography>
+        )}
       </AccordionDetails>
     </Accordion>
   );
