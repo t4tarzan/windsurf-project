@@ -39,7 +39,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   LocationOn as LocationIcon,
   Event as SeasonIcon,
-  Eco as EcoIcon
+  Park as EcoIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { analyzeImage } from '../../services/ml/plantAnalysisService';

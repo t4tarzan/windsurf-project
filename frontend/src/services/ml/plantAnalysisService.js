@@ -379,4 +379,5 @@ class PlantAnalysisService {
 // Create singleton instance
 const plantAnalysisService = new PlantAnalysisService();
 
+export const analyzeImage = (image) => plantAnalysisService.analyzeImage(image);
 export default plantAnalysisService;
