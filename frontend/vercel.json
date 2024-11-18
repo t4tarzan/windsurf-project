@@ -17,22 +17,30 @@
       "dest": "/static/$1"
     },
     {
-      "src": "/favicon.ico",
+      "src": "^/favicon.ico$",
       "dest": "/favicon.ico"
     },
     {
-      "src": "/manifest.json",
+      "src": "^/manifest.json$",
       "dest": "/manifest.json"
     },
     {
-      "src": "/robots.txt",
+      "src": "^/robots.txt$",
       "dest": "/robots.txt"
     },
     {
-      "src": "/(.*)",
+      "src": "^/asset-manifest.json$",
+      "dest": "/asset-manifest.json"
+    },
+    {
+      "src": ".*",
       "dest": "/index.html"
     }
   ],
+  "github": {
+    "enabled": true,
+    "silent": true
+  },
   "env": {
     "REACT_APP_PLANTNET_API_KEY": "@plantnet_api_key",
     "REACT_APP_TREFLE_API_KEY": "@trefle_api_key"
