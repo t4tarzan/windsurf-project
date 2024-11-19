@@ -537,9 +537,11 @@ const PlantAnalyzer = () => {
               <Box sx={{ mt: 3, textAlign: 'center' }}>
                 <Button
                   variant="contained"
+                  color="secondary"
                   onClick={resetAnalyzer}
+                  data-testid="reset-button"
                 >
-                  Analyze Another Plant
+                  Reset
                 </Button>
               </Box>
             </Box>

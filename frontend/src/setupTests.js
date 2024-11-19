@@ -3,3 +3,16 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+
+// Mock URL.createObjectURL
+if (typeof window !== 'undefined') {
+  window.URL.createObjectURL = jest.fn((file) => 'mock-url');
+}
+
+// Mock fetch
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    blob: () => Promise.resolve(new Blob()),
+    json: () => Promise.resolve({}),
+  })
+);

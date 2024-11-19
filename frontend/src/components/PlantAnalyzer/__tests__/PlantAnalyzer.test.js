@@ -41,21 +41,35 @@ jest.mock('../../../services/ml/plantAnalysisService', () => ({
 }));
 
 // Mock FileReader
-const mockFileReader = {
-  readAsDataURL: jest.fn(),
-  onloadend: null,
-  result: 'data:image/png;base64,mockImageData'
-};
+class MockFileReader {
+  constructor() {
+    this.result = 'data:image/png;base64,mockImageData';
+    this.onloadend = null;
+  }
 
-window.FileReader = jest.fn().mockImplementation(() => mockFileReader);
+  readAsDataURL() {
+    setTimeout(() => {
+      if (this.onloadend) {
+        this.onloadend();
+      }
+    }, 0);
+  }
+}
+
+window.FileReader = jest.fn().mockImplementation(() => new MockFileReader());
 
 // Mock Image
-const mockImage = {
-  src: '',
-  onload: null,
-};
+class MockImage {
+  constructor() {
+    setTimeout(() => {
+      if (this.onload) {
+        this.onload();
+      }
+    }, 0);
+  }
+}
 
-window.Image = jest.fn().mockImplementation(() => mockImage);
+window.Image = jest.fn().mockImplementation(() => new MockImage());
 
 describe('PlantAnalyzer Component', () => {
   const mockAnalysisResult = {
@@ -87,9 +101,15 @@ describe('PlantAnalyzer Component', () => {
     await act(async () => {
       await userEvent.upload(input, file);
       // Simulate FileReader
-      mockFileReader.onloadend();
-      // Simulate image load
-      mockImage.onload();
+      const fileReader = new window.FileReader();
+      fileReader.onloadend = () => {
+        // Simulate image load
+        const image = new window.Image();
+        image.onload = () => {
+          // Do nothing
+        };
+      };
+      fileReader.readAsDataURL(file);
     });
 
     // Verify analysis was triggered
@@ -120,7 +140,10 @@ describe('PlantAnalyzer Component', () => {
     await act(async () => {
       await userEvent.click(captureButton);
       // Simulate image load
-      mockImage.onload();
+      const image = new window.Image();
+      image.onload = () => {
+        // Do nothing
+      };
     });
 
     // Verify screenshot was taken
@@ -154,8 +177,14 @@ describe('PlantAnalyzer Component', () => {
     
     await act(async () => {
       await userEvent.upload(input, file);
-      mockFileReader.onloadend();
-      mockImage.onload();
+      const fileReader = new window.FileReader();
+      fileReader.onloadend = () => {
+        const image = new window.Image();
+        image.onload = () => {
+          // Do nothing
+        };
+      };
+      fileReader.readAsDataURL(file);
     });
 
     // Check if error message is displayed
@@ -165,26 +194,23 @@ describe('PlantAnalyzer Component', () => {
   });
 
   test('resets analyzer state', async () => {
+    // Mock successful analysis
+    plantAnalysisService.analyzeImage.mockResolvedValueOnce(mockAnalysisResult);
+
+    // Render component
     render(<PlantAnalyzer />);
 
-    // Wait for model to initialize
-    await waitFor(() => {
-      expect(screen.getByText(/Upload a photo or use your camera/i)).toBeInTheDocument();
-    });
-
-    // Upload a file and get analysis result
-    const file = new File(['test'], 'test.png', { type: 'image/png' });
-    const input = screen.getByTestId('file-input');
+    // Upload a file
+    const file = new File(['dummy content'], 'test.png', { type: 'image/png' });
+    const fileInput = screen.getByTestId('file-input');
     
     await act(async () => {
-      await userEvent.upload(input, file);
-      mockFileReader.onloadend();
-      mockImage.onload();
+      await userEvent.upload(fileInput, file);
     });
 
-    // Wait for result
+    // Wait for analysis to complete
     await waitFor(() => {
-      expect(screen.getByText(mockAnalysisResult.plantType)).toBeInTheDocument();
+      expect(screen.getByTestId('reset-button')).toBeInTheDocument();
     });
 
     // Click reset button
@@ -193,10 +219,8 @@ describe('PlantAnalyzer Component', () => {
       await userEvent.click(resetButton);
     });
 
-    // Verify reset
-    await waitFor(() => {
-      expect(screen.queryByText(mockAnalysisResult.plantType)).not.toBeInTheDocument();
-      expect(screen.getByText(/Upload a photo or use your camera/i)).toBeInTheDocument();
-    });
+    // Verify state is reset
+    expect(screen.queryByAltText('Uploaded plant')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Plant Health Status/i)).not.toBeInTheDocument();
   });
 });

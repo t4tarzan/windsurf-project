@@ -12,6 +12,7 @@ import Navbar from './components/Navbar';
 import Home from './components/Home';
 import PlaceholderPage from './components/PlaceholderPage';
 import PlantAnalyzer from './components/PlantAnalyzer/PlantAnalyzer';
+import FarmingTools from './components/FarmingTools/FarmingTools';
 
 // Create a theme instance
 const theme = createTheme({
@@ -82,10 +83,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/analyze" element={<PlantAnalyzer />} />
-            <Route 
-              path="/tools" 
-              element={<PlaceholderPage {...placeholderContent.tools} />} 
-            />
+            <Route path="/tools" element={<FarmingTools />} />
             <Route 
               path="/progress" 
               element={<PlaceholderPage {...placeholderContent.progress} />} 
