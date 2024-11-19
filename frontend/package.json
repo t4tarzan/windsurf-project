@@ -29,8 +29,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "react-scripts test --watchAll=false",
+    "test:watch": "react-scripts test"
   },
   "eslintConfig": {
     "extends": [
@@ -66,5 +66,15 @@
     "jest": "^27.5.1",
     "jest-environment-jsdom": "^27.5.1",
     "vercel": "^39.0.3"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "moduleNameMapper": {
+      "\\.(css|less|sass|scss)$": "<rootDir>/__mocks__/styleMock.js",
+      "\\.(gif|ttf|eot|svg)$": "<rootDir>/__mocks__/fileMock.js"
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
+    ]
   }
 }
