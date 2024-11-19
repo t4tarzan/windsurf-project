@@ -14,8 +14,21 @@ import {
   Alert,
   Paper,
   Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
-import { CalendarMonth, Agriculture, WbSunny } from '@mui/icons-material';
+import {
+  ExpandMore as ExpandMoreIcon,
+  CalendarMonth as CalendarIcon,
+  Agriculture as AgricultureIcon,
+  Info as InfoIcon,
+  WbSunny as SunIcon,
+} from '@mui/icons-material';
 import { addDays, format } from 'date-fns';
 
 const cropData = {
@@ -94,6 +107,45 @@ const cropData = {
       soil: 'Well-draining, fertile soil'
     }
   }
+};
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Harvest Date Estimator is an essential tool for agricultural planning that helps predict when crops will be ready for harvest. This calculator considers various factors including crop type, planting date, and growing conditions to provide accurate harvest date estimates.`,
+  
+  importance: [
+    {
+      title: 'Harvest Planning',
+      description: 'Optimize labor and equipment scheduling',
+      impact: 'Improves resource allocation'
+    },
+    {
+      title: 'Market Timing',
+      description: 'Plan harvests to meet market demands',
+      impact: 'Maximizes profit potential'
+    },
+    {
+      title: 'Storage Preparation',
+      description: 'Prepare storage facilities in advance',
+      impact: 'Reduces post-harvest losses'
+    }
+  ],
+
+  factors: [
+    'Crop variety and maturity period',
+    'Local climate conditions',
+    'Soil type and fertility',
+    'Irrigation practices',
+    'Weather patterns during growing season'
+  ],
+
+  tips: [
+    'Keep detailed records of actual harvest dates to improve future estimates',
+    'Consider weather forecasts when fine-tuning harvest dates',
+    'Monitor crop development signs for more accurate predictions',
+    'Account for successive harvests for certain crops',
+    'Plan for potential harvest delays due to weather'
+  ]
 };
 
 const HarvestDateEstimator = () => {
@@ -182,6 +234,87 @@ const HarvestDateEstimator = () => {
           Calculate estimated harvest dates based on planting date, crop variety, and growing conditions.
         </Typography>
 
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography variant="h6">Why Use a Harvest Date Estimator?</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="body1" paragraph>
+              {educationalContent.introduction}
+            </Typography>
+            <List>
+              {educationalContent.importance.map((item, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <AgricultureIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.title}
+                    secondary={
+                      <React.Fragment>
+                        <Typography variant="body2" color="textSecondary">
+                          {item.description}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Impact: {item.impact}
+                        </Typography>
+                      </React.Fragment>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel2a-content"
+            id="panel2a-header"
+          >
+            <Typography variant="h6">Factors Affecting Harvest Date Estimates</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.factors.map((factor, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <InfoIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={factor} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel3a-content"
+            id="panel3a-header"
+          >
+            <Typography variant="h6">Tips for Accurate Harvest Date Estimates</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.tips.map((tip, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <CalendarIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={tip} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
@@ -191,7 +324,7 @@ const HarvestDateEstimator = () => {
                 value={inputs.crop}
                 onChange={handleInputChange}
                 label="Crop"
-                startAdornment={<Agriculture sx={{ mr: 1 }} />}
+                startAdornment={<AgricultureIcon sx={{ mr: 1 }} />}
               >
                 {Object.keys(cropData).map(crop => (
                   <MenuItem key={crop} value={crop}>
@@ -229,7 +362,7 @@ const HarvestDateEstimator = () => {
               value={inputs.plantingDate}
               onChange={handleInputChange}
               InputProps={{
-                startAdornment: <CalendarMonth sx={{ mr: 1 }} />,
+                startAdornment: <CalendarIcon sx={{ mr: 1 }} />,
               }}
               InputLabelProps={{
                 shrink: true,
@@ -245,7 +378,7 @@ const HarvestDateEstimator = () => {
                 value={inputs.growthConditions}
                 onChange={handleInputChange}
                 label="Growing Conditions"
-                startAdornment={<WbSunny sx={{ mr: 1 }} />}
+                startAdornment={<SunIcon sx={{ mr: 1 }} />}
               >
                 <MenuItem value="poor">Poor (Limited sun/nutrients)</MenuItem>
                 <MenuItem value="fair">Fair (Some limitations)</MenuItem>
@@ -260,7 +393,7 @@ const HarvestDateEstimator = () => {
               color="primary"
               onClick={calculateHarvestDate}
               fullWidth
-              startIcon={<CalendarMonth />}
+              startIcon={<CalendarIcon />}
             >
               Calculate Harvest Date
             </Button>

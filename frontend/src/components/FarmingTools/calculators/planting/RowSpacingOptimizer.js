@@ -13,8 +13,91 @@ import {
   Select,
   Tooltip,
   IconButton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemText,
+  Card,
+  CardContent,
+  Divider
 } from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
+import {
+  Info as InfoIcon,
+  ExpandMore as ExpandMoreIcon,
+  Straighten as MeasureIcon,
+  Agriculture as CropIcon,
+  GridOn as RowIcon
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Row Spacing Optimizer helps farmers maximize crop yield by calculating optimal spacing between rows and plants. Proper spacing ensures efficient use of resources, reduces competition, and promotes healthy plant growth.`,
+  
+  spacingFactors: [
+    {
+      factor: 'Plant Size at Maturity',
+      description: 'Consider the full-grown size of plants',
+      importance: 'Prevents overcrowding and competition for resources'
+    },
+    {
+      factor: 'Root System',
+      description: 'Account for root spread and depth',
+      importance: 'Ensures adequate nutrient access and stability'
+    },
+    {
+      factor: 'Growing Method',
+      description: 'Different techniques require different spacing',
+      importance: 'Accommodates equipment and cultivation practices'
+    },
+    {
+      factor: 'Climate Conditions',
+      description: 'Spacing affects airflow and humidity',
+      importance: 'Helps prevent disease and optimize growth'
+    }
+  ],
+
+  spacingBenefits: {
+    yield: {
+      description: 'Impact on crop production',
+      benefits: [
+        'Maximizes yield per area',
+        'Optimizes resource utilization',
+        'Reduces plant competition',
+        'Improves crop quality'
+      ]
+    },
+    management: {
+      description: 'Operational advantages',
+      benefits: [
+        'Easier harvesting access',
+        'Efficient equipment use',
+        'Better pest monitoring',
+        'Simplified maintenance'
+      ]
+    }
+  },
+
+  cropSpecificGuidelines: {
+    description: 'Spacing recommendations by crop type',
+    notes: [
+      'Leafy greens need less space but frequent access',
+      'Root vegetables require soil volume consideration',
+      'Climbing plants need support structure spacing',
+      'Fruit-bearing crops need air circulation'
+    ]
+  },
+
+  bestPractices: [
+    'Consider companion planting arrangements',
+    'Plan for irrigation system access',
+    'Account for equipment width requirements',
+    'Allow space for maintenance activities',
+    'Consider succession planting needs',
+    'Factor in local climate conditions'
+  ]
+};
 
 const cropTypes = {
   'leafy-greens': {
@@ -148,145 +231,240 @@ const RowSpacingOptimizer = () => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
-      <Typography variant="h5" gutterBottom>
-        Row Spacing Optimizer
-      </Typography>
-      <Typography variant="body2" color="text.secondary" paragraph>
-        Optimize row and plant spacing based on your plot size and target yield.
-      </Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Unit of Measurement</InputLabel>
-            <Select
-              name="unit"
-              value={inputs.unit}
-              label="Unit of Measurement"
-              onChange={handleInputChange}
-            >
-              <MenuItem value="meters">Meters</MenuItem>
-              <MenuItem value="feet">Feet</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Crop Type</InputLabel>
-            <Select
-              name="cropType"
-              value={inputs.cropType}
-              label="Crop Type"
-              onChange={handleInputChange}
-            >
-              {Object.entries(cropTypes).map(([key, value]) => (
-                <MenuItem key={key} value={key}>{value.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label={`Plot Length (${inputs.unit})`}
-            name="plotLength"
-            value={inputs.plotLength}
-            onChange={handleInputChange}
-            type="number"
-            inputProps={{ min: 0, step: "0.1" }}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label={`Plot Width (${inputs.unit})`}
-            name="plotWidth"
-            value={inputs.plotWidth}
-            onChange={handleInputChange}
-            type="number"
-            inputProps={{ min: 0, step: "0.1" }}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Target Number of Plants"
-            name="targetYield"
-            value={inputs.targetYield}
-            onChange={handleInputChange}
-            type="number"
-            inputProps={{ min: 1, step: 1 }}
-          />
-        </Grid>
-
-        <Grid item xs={12}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={calculateOptimalSpacing}
-            fullWidth
-          >
-            Calculate Optimal Spacing
-          </Button>
-        </Grid>
-      </Grid>
-
-      {error && (
-        <Box mt={2}>
-          <Alert severity="error">{error}</Alert>
-        </Box>
-      )}
-
-      {results && (
-        <Box mt={3}>
-          <Typography variant="h6" gutterBottom>
-            Optimal Configuration
+    <Box sx={{ width: '100%', p: 3 }}>
+      {/* Educational Content Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+            <RowIcon sx={{ mr: 1 }} />
+            Row Spacing Optimizer
           </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                Row Spacing: {results.rowSpacing} m
-                <Tooltip title="Distance between rows">
-                  <IconButton size="small">
-                    <InfoIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
+          <Typography paragraph color="text.secondary">
+            {educationalContent.introduction}
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Spacing Factors */}
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+            <InfoIcon sx={{ mr: 1 }} />
+            Key Spacing Factors
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <List>
+            {educationalContent.spacingFactors.map((factor, index) => (
+              <ListItem key={index}>
+                <ListItemText
+                  primary={factor.factor}
+                  secondary={`${factor.description} - ${factor.importance}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Benefits Section */}
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+            <MeasureIcon sx={{ mr: 1 }} />
+            Benefits of Optimal Spacing
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle1" gutterBottom>
+                Yield Benefits
               </Typography>
+              <List>
+                {educationalContent.spacingBenefits.yield.benefits.map((benefit, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={benefit} />
+                  </ListItem>
+                ))}
+              </List>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                Plant Spacing: {results.plantSpacing} m
-                <Tooltip title="Distance between plants in a row">
-                  <IconButton size="small">
-                    <InfoIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle1" gutterBottom>
+                Management Benefits
               </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                Number of Rows: {results.rows}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                Plants per Row: {results.plantsPerRow}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body1">
-                Total Plants: {results.totalPlants}
-              </Typography>
+              <List>
+                {educationalContent.spacingBenefits.management.benefits.map((benefit, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={benefit} />
+                  </ListItem>
+                ))}
+              </List>
             </Grid>
           </Grid>
-        </Box>
-      )}
-    </Paper>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Calculator Section */}
+      <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Row Spacing Optimizer
+        </Typography>
+        <Typography variant="body2" color="text.secondary" paragraph>
+          Optimize row and plant spacing based on your plot size and target yield.
+        </Typography>
+
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Unit of Measurement</InputLabel>
+              <Select
+                name="unit"
+                value={inputs.unit}
+                label="Unit of Measurement"
+                onChange={handleInputChange}
+              >
+                <MenuItem value="meters">Meters</MenuItem>
+                <MenuItem value="feet">Feet</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Crop Type</InputLabel>
+              <Select
+                name="cropType"
+                value={inputs.cropType}
+                label="Crop Type"
+                onChange={handleInputChange}
+              >
+                {Object.entries(cropTypes).map(([key, value]) => (
+                  <MenuItem key={key} value={key}>{value.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label={`Plot Length (${inputs.unit})`}
+              name="plotLength"
+              value={inputs.plotLength}
+              onChange={handleInputChange}
+              type="number"
+              inputProps={{ min: 0, step: "0.1" }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label={`Plot Width (${inputs.unit})`}
+              name="plotWidth"
+              value={inputs.plotWidth}
+              onChange={handleInputChange}
+              type="number"
+              inputProps={{ min: 0, step: "0.1" }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Target Number of Plants"
+              name="targetYield"
+              value={inputs.targetYield}
+              onChange={handleInputChange}
+              type="number"
+              inputProps={{ min: 1, step: 1 }}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={calculateOptimalSpacing}
+              fullWidth
+            >
+              Calculate Optimal Spacing
+            </Button>
+          </Grid>
+        </Grid>
+
+        {error && (
+          <Box mt={2}>
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        )}
+
+        {results && (
+          <Box mt={3}>
+            <Typography variant="h6" gutterBottom>
+              Optimal Configuration
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  Row Spacing: {results.rowSpacing} m
+                  <Tooltip title="Distance between rows">
+                    <IconButton size="small">
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  Plant Spacing: {results.plantSpacing} m
+                  <Tooltip title="Distance between plants in a row">
+                    <IconButton size="small">
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  Number of Rows: {results.rows}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  Plants per Row: {results.plantsPerRow}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="body1">
+                  Total Plants: {results.totalPlants}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Box>
+        )}
+      </Paper>
+
+      {/* Best Practices */}
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+            <CropIcon sx={{ mr: 1 }} />
+            Best Practices
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <List>
+            {educationalContent.bestPractices.map((practice, index) => (
+              <ListItem key={index}>
+                <ListItemText primary={practice} />
+              </ListItem>
+            ))}
+          </List>
+        </AccordionDetails>
+      </Accordion>
+    </Box>
   );
 };
 

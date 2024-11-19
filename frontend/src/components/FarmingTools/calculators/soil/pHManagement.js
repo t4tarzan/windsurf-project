@@ -1,313 +1,347 @@
 import React, { useState } from 'react';
 import {
-  Card,
-  CardContent,
+  Box,
   Typography,
-  Grid,
   TextField,
   Button,
-  Box,
-  Slider,
   Paper,
+  Grid,
   Divider,
   Alert,
   List,
   ListItem,
-  ListItemIcon,
   ListItemText,
-  Chip,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
 } from '@mui/material';
-import {
-  Science as TestIcon,
-  ArrowUpward as IncreaseIcon,
-  ArrowDownward as DecreaseIcon,
-  Check as OptimalIcon,
-} from '@mui/icons-material';
-
-// Optimal pH ranges for common crops
-const cropPHRanges = {
-  'Vegetables': {
-    'Tomatoes': { min: 6.0, max: 6.8 },
-    'Peppers': { min: 6.0, max: 7.0 },
-    'Carrots': { min: 6.0, max: 6.8 },
-    'Lettuce': { min: 6.0, max: 7.0 },
-    'Potatoes': { min: 5.5, max: 6.5 },
-    'Beans': { min: 6.0, max: 7.0 },
-  },
-  'Fruits': {
-    'Strawberries': { min: 5.5, max: 6.8 },
-    'Blueberries': { min: 4.5, max: 5.5 },
-    'Raspberries': { min: 5.5, max: 6.5 },
-    'Apples': { min: 6.0, max: 7.0 },
-  },
-  'Grains': {
-    'Corn': { min: 6.0, max: 7.0 },
-    'Wheat': { min: 6.0, max: 7.0 },
-    'Soybeans': { min: 6.0, max: 6.8 },
-  },
-};
-
-// Soil amendments and their effects on pH
-const soilAmendments = {
-  'increase': [
-    {
-      name: 'Agricultural Lime',
-      effect: 'Strong increase',
-      rate: '2-3 lbs per 100 sq ft',
-      notes: 'Most common amendment for acidic soils. Apply in fall for best results.',
-    },
-    {
-      name: 'Dolomitic Limestone',
-      effect: 'Strong increase',
-      rate: '2-3 lbs per 100 sq ft',
-      notes: 'Contains magnesium, good for magnesium-deficient soils.',
-    },
-    {
-      name: 'Wood Ash',
-      effect: 'Moderate increase',
-      rate: '1-2 lbs per 100 sq ft',
-      notes: 'Also adds potassium and trace minerals. Use with caution.',
-    },
-  ],
-  'decrease': [
-    {
-      name: 'Elemental Sulfur',
-      effect: 'Strong decrease',
-      rate: '1-2 lbs per 100 sq ft',
-      notes: 'Slow-acting but long-lasting. Best applied in spring.',
-    },
-    {
-      name: 'Aluminum Sulfate',
-      effect: 'Quick decrease',
-      rate: '1-2 lbs per 100 sq ft',
-      notes: 'Fast-acting but use with caution to avoid aluminum toxicity.',
-    },
-    {
-      name: 'Iron Sulfate',
-      effect: 'Moderate decrease',
-      rate: '2-3 lbs per 100 sq ft',
-      notes: 'Also adds iron, good for iron-deficient soils.',
-    },
-  ],
-};
+import { SocialShare } from '../../common/SocialShare';
 
 const PHManagement = () => {
   const [currentPH, setCurrentPH] = useState('');
   const [targetPH, setTargetPH] = useState('');
-  const [selectedCrop, setSelectedCrop] = useState('');
-  const [recommendations, setRecommendations] = useState(null);
+  const [soilType, setSoilType] = useState('');
+  const [areaSize, setAreaSize] = useState('');
+  const [result, setResult] = useState(null);
 
-  const handlePHChange = (event, newValue) => {
-    setCurrentPH(newValue);
-    if (selectedCrop) {
-      analyzeAndRecommend(newValue, selectedCrop);
-    }
+  const calculateAmendments = () => {
+    // Add your pH calculation logic here
+    // This is a simplified example
+    if (!currentPH || !targetPH || !soilType || !areaSize) return;
+
+    const phDifference = Math.abs(parseFloat(targetPH) - parseFloat(currentPH));
+    const areaSqFt = parseFloat(areaSize);
+
+    // Simplified calculation - in reality, would need more complex formulas
+    const limeNeeded = phDifference * areaSqFt * 0.75; // Example rate
+    const sulfurNeeded = phDifference * areaSqFt * 0.5; // Example rate
+
+    setResult({
+      limeAmount: parseFloat(currentPH) < parseFloat(targetPH) ? limeNeeded.toFixed(2) : 0,
+      sulfurAmount: parseFloat(currentPH) > parseFloat(targetPH) ? sulfurNeeded.toFixed(2) : 0,
+      phDifference: phDifference.toFixed(2)
+    });
   };
 
-  const handleCropSelect = (crop) => {
-    setSelectedCrop(crop);
-    if (currentPH) {
-      analyzeAndRecommend(currentPH, crop);
-    }
-  };
-
-  const analyzeAndRecommend = (ph, crop) => {
-    let cropRange = null;
-    
-    // Find the crop range
-    for (const category in cropPHRanges) {
-      if (cropPHRanges[category][crop]) {
-        cropRange = cropPHRanges[category][crop];
-        break;
-      }
-    }
-
-    if (!cropRange) return;
-
-    const recommendations = {
-      current: ph,
-      optimal: cropRange,
-      status: '',
-      amendments: [],
-    };
-
-    if (ph < cropRange.min) {
-      recommendations.status = 'too_acidic';
-      recommendations.amendments = soilAmendments.increase;
-    } else if (ph > cropRange.max) {
-      recommendations.status = 'too_alkaline';
-      recommendations.amendments = soilAmendments.decrease;
-    } else {
-      recommendations.status = 'optimal';
-    }
-
-    setRecommendations(recommendations);
-    setTargetPH((cropRange.max + cropRange.min) / 2);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'too_acidic':
-        return 'error';
-      case 'too_alkaline':
-        return 'warning';
-      case 'optimal':
-        return 'success';
-      default:
-        return 'default';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'too_acidic':
-        return <IncreaseIcon />;
-      case 'too_alkaline':
-        return <DecreaseIcon />;
-      case 'optimal':
-        return <OptimalIcon />;
-      default:
-        return <TestIcon />;
-    }
-  };
+  const phRangeTable = [
+    { crop: 'Most Vegetables', range: '6.0-7.0', optimal: '6.5' },
+    { crop: 'Potatoes', range: '5.0-6.0', optimal: '5.5' },
+    { crop: 'Blueberries', range: '4.5-5.5', optimal: '5.0' },
+    { crop: 'Tomatoes', range: '6.0-6.8', optimal: '6.5' },
+    { crop: 'Carrots', range: '5.5-7.0', optimal: '6.3' },
+    { crop: 'Beans', range: '6.0-7.0', optimal: '6.5' },
+    { crop: 'Corn', range: '5.8-7.0', optimal: '6.5' }
+  ];
 
   return (
-    <Card>
-      <CardContent>
-        <Typography variant="h5" gutterBottom>
-          Soil pH Management
+    <Box>
+      {/* Comprehensive Introduction */}
+      <Box mb={4}>
+        <Typography variant="h4" gutterBottom>
+          Soil pH Management Calculator
         </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
-          Optimize your soil pH for better crop growth and nutrient availability.
+        <Typography variant="body1" paragraph>
+          Soil pH is one of the most crucial factors in plant growth and nutrient availability. This calculator helps you determine 
+          the right amount of amendments needed to optimize your soil pH for specific crops, ensuring maximum nutrient availability 
+          and plant health.
         </Typography>
 
-        <Grid container spacing={3}>
+        {/* Educational Content Section */}
+        <Grid container spacing={3} mb={4}>
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Current Soil pH
-              </Typography>
-              <Box sx={{ px: 2 }}>
-                <Slider
-                  value={currentPH || 7}
-                  onChange={handlePHChange}
-                  min={4}
-                  max={9}
-                  step={0.1}
-                  marks={[
-                    { value: 4, label: '4.0' },
-                    { value: 5, label: '5.0' },
-                    { value: 6, label: '6.0' },
-                    { value: 7, label: '7.0' },
-                    { value: 8, label: '8.0' },
-                    { value: 9, label: '9.0' },
-                  ]}
-                  valueLabelDisplay="on"
-                />
-              </Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                Move the slider to set your current soil pH value
-              </Typography>
-            </Paper>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Understanding Soil pH
+                </Typography>
+                <Typography variant="body2" paragraph>
+                  Soil pH measures the acidity or alkalinity of your soil on a scale from 0 to 14, with 7 being neutral. Most plants 
+                  thrive in slightly acidic to neutral soil (pH 6.0-7.0), but some plants have specific pH requirements:
+                </Typography>
+                <Typography variant="body2" paragraph>
+                  • Below 7.0: Acidic soil (preferred by acid-loving plants like blueberries)<br />
+                  • 7.0: Neutral<br />
+                  • Above 7.0: Alkaline soil (preferred by some vegetables and herbs)
+                </Typography>
+                <Typography variant="body2" paragraph>
+                  The pH level affects nutrient availability, soil bacteria activity, and overall plant health. When pH is too high or 
+                  too low, certain nutrients become less available to plants, leading to deficiencies even when those nutrients are 
+                  present in the soil.
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
-
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Select Crop
-              </Typography>
-              <Grid container spacing={1}>
-                {Object.entries(cropPHRanges).map(([category, crops]) => (
-                  <Grid item xs={12} key={category}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      {category}
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {Object.keys(crops).map((crop) => (
-                        <Chip
-                          key={crop}
-                          label={crop}
-                          onClick={() => handleCropSelect(crop)}
-                          color={selectedCrop === crop ? 'primary' : 'default'}
-                          variant={selectedCrop === crop ? 'filled' : 'outlined'}
-                        />
-                      ))}
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </Paper>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Why pH Management Matters
+                </Typography>
+                <List dense>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Nutrient Availability" 
+                      secondary="Proper pH ensures plants can access essential nutrients in the soil"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Root Health" 
+                      secondary="Optimal pH promotes healthy root development and function"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Beneficial Microorganisms" 
+                      secondary="Correct pH supports beneficial soil microbe activity"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Plant Growth" 
+                      secondary="Balanced pH leads to stronger, healthier plants and better yields"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Cost Efficiency" 
+                      secondary="Proper pH reduces fertilizer waste and improves nutrient uptake"
+                    />
+                  </ListItem>
+                </List>
+              </CardContent>
+            </Card>
           </Grid>
-
-          {recommendations && (
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">
-                    Analysis & Recommendations
-                  </Typography>
-                  <Chip
-                    icon={getStatusIcon(recommendations.status)}
-                    label={recommendations.status === 'optimal' ? 'Optimal pH' : 'Adjustment Needed'}
-                    color={getStatusColor(recommendations.status)}
-                    sx={{ ml: 2 }}
-                  />
-                </Box>
-
-                <Alert 
-                  severity={getStatusColor(recommendations.status)}
-                  sx={{ mb: 2 }}
-                >
-                  {recommendations.status === 'optimal' ? (
-                    `Your soil pH (${currentPH}) is within the optimal range for ${selectedCrop} (${recommendations.optimal.min}-${recommendations.optimal.max}).`
-                  ) : recommendations.status === 'too_acidic' ? (
-                    `Your soil pH (${currentPH}) is too acidic for ${selectedCrop}. Target range: ${recommendations.optimal.min}-${recommendations.optimal.max}.`
-                  ) : (
-                    `Your soil pH (${currentPH}) is too alkaline for ${selectedCrop}. Target range: ${recommendations.optimal.min}-${recommendations.optimal.max}.`
-                  )}
-                </Alert>
-
-                {recommendations.status !== 'optimal' && (
-                  <>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Recommended Amendments
-                    </Typography>
-                    <List>
-                      {recommendations.amendments.map((amendment, index) => (
-                        <React.Fragment key={amendment.name}>
-                          <ListItem>
-                            <ListItemIcon>
-                              <TestIcon color="primary" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={amendment.name}
-                              secondary={
-                                <>
-                                  <Typography variant="body2">
-                                    Effect: {amendment.effect}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    Application Rate: {amendment.rate}
-                                  </Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {amendment.notes}
-                                  </Typography>
-                                </>
-                              }
-                            />
-                          </ListItem>
-                          {index < recommendations.amendments.length - 1 && <Divider />}
-                        </React.Fragment>
-                      ))}
-                    </List>
-                  </>
-                )}
-              </Paper>
-            </Grid>
-          )}
         </Grid>
-      </CardContent>
-    </Card>
+
+        {/* Common Crops pH Requirements Table */}
+        <Card sx={{ mb: 4 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Common Crop pH Requirements
+            </Typography>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell><strong>Crop</strong></TableCell>
+                    <TableCell><strong>pH Range</strong></TableCell>
+                    <TableCell><strong>Optimal pH</strong></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {phRangeTable.map((row) => (
+                    <TableRow key={row.crop}>
+                      <TableCell>{row.crop}</TableCell>
+                      <TableCell>{row.range}</TableCell>
+                      <TableCell>{row.optimal}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+
+        {/* How to Use Section */}
+        <Card sx={{ mb: 4 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              How to Use This Calculator
+            </Typography>
+            <Typography variant="body2" paragraph>
+              1. Test your soil pH using a reliable soil testing kit or professional lab analysis
+            </Typography>
+            <Typography variant="body2" paragraph>
+              2. Enter your current soil pH value
+            </Typography>
+            <Typography variant="body2" paragraph>
+              3. Select your target pH based on what you plan to grow (use the table above as a reference)
+            </Typography>
+            <Typography variant="body2" paragraph>
+              4. Enter your soil type and area size
+            </Typography>
+            <Typography variant="body2">
+              5. The calculator will determine the amount of lime (to raise pH) or sulfur (to lower pH) needed
+            </Typography>
+          </CardContent>
+        </Card>
+
+        <Alert severity="info" sx={{ mb: 4 }}>
+          <Typography variant="body2">
+            <strong>Pro Tip:</strong> Always perform a soil test before making major pH adjustments. Apply amendments gradually 
+            and retest after each application. It's better to make several small adjustments than one large correction.
+          </Typography>
+        </Alert>
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Calculator Section */}
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Calculate pH Amendments
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Current Soil pH"
+              type="number"
+              value={currentPH}
+              onChange={(e) => setCurrentPH(e.target.value)}
+              inputProps={{ step: "0.1", min: "0", max: "14" }}
+              helperText="Enter your current soil pH (0-14)"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Target pH"
+              type="number"
+              value={targetPH}
+              onChange={(e) => setTargetPH(e.target.value)}
+              inputProps={{ step: "0.1", min: "0", max: "14" }}
+              helperText="Enter your desired soil pH (0-14)"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Soil Type"
+              value={soilType}
+              onChange={(e) => setSoilType(e.target.value)}
+              helperText="Enter your soil type (e.g., sandy, clay, loam)"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Area Size (sq ft)"
+              type="number"
+              value={areaSize}
+              onChange={(e) => setAreaSize(e.target.value)}
+              helperText="Enter the area to be treated in square feet"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={calculateAmendments}
+              fullWidth
+            >
+              Calculate Amendments
+            </Button>
+          </Grid>
+        </Grid>
+
+        {result && (
+          <Box mt={3}>
+            <Typography variant="h6" gutterBottom>
+              Recommended Amendments
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <Paper elevation={1} sx={{ p: 2 }}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    pH Adjustment Needed:
+                  </Typography>
+                  <Typography variant="h6">
+                    {result.phDifference} units
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Paper elevation={1} sx={{ p: 2 }}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Lime Needed (to raise pH):
+                  </Typography>
+                  <Typography variant="h6">
+                    {result.limeAmount} lbs
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Paper elevation={1} sx={{ p: 2 }}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Sulfur Needed (to lower pH):
+                  </Typography>
+                  <Typography variant="h6">
+                    {result.sulfurAmount} lbs
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+            
+            <Alert severity="info" sx={{ mt: 3 }}>
+              <Typography variant="body2">
+                <strong>Application Tips:</strong>
+                <br />• Apply amendments when soil is moist but not wet
+                <br />• Incorporate amendments into the top 6 inches of soil
+                <br />• Allow 2-3 months for changes to take effect
+                <br />• Retest soil pH before making additional adjustments
+              </Typography>
+            </Alert>
+          </Box>
+        )}
+      </Paper>
+
+      {/* Additional Resources Section */}
+      <Card sx={{ mt: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Additional Resources
+          </Typography>
+          <Typography variant="body2" paragraph>
+            <strong>Common pH Amendments:</strong>
+          </Typography>
+          <Typography variant="body2" paragraph>
+            To Raise pH:
+            <br />• Agricultural lime (calcium carbonate)
+            <br />• Dolomitic lime (calcium and magnesium carbonate)
+            <br />• Wood ash (use cautiously, test first)
+          </Typography>
+          <Typography variant="body2" paragraph>
+            To Lower pH:
+            <br />• Elemental sulfur
+            <br />• Aluminum sulfate
+            <br />• Iron sulfate
+          </Typography>
+          <Typography variant="body2">
+            Remember that soil pH changes take time and multiple applications may be needed to reach your target pH. Regular 
+            monitoring and maintenance are key to successful pH management.
+          </Typography>
+        </CardContent>
+      </Card>
+
+      <SocialShare />
+    </Box>
   );
 };
 

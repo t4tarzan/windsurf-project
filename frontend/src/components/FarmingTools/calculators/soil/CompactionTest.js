@@ -1,424 +1,334 @@
 import React, { useState } from 'react';
 import {
-  Card,
-  CardContent,
+  Box,
   Typography,
-  Grid,
   TextField,
   Button,
-  Box,
   Paper,
+  Grid,
   Divider,
   Alert,
   List,
   ListItem,
-  ListItemIcon,
   ListItemText,
-  Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Card,
+  CardContent,
+  Radio,
   RadioGroup,
   FormControlLabel,
-  Radio,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
+  FormControl,
+  FormLabel
 } from '@mui/material';
-import {
-  SoilIcon,
-  Warning as WarningIcon,
-  Check as CheckIcon,
-  Info as InfoIcon,
-} from '@mui/icons-material';
-
-// Soil type characteristics
-const soilTypes = {
-  'sandy': {
-    name: 'Sandy Soil',
-    description: 'Light, well-draining soil with large particles',
-    idealPenetration: {
-      min: 15,
-      max: 20,
-    },
-    compactionRisk: 'Low',
-  },
-  'loamy': {
-    name: 'Loamy Soil',
-    description: 'Medium-textured soil with good structure',
-    idealPenetration: {
-      min: 12,
-      max: 18,
-    },
-    compactionRisk: 'Medium',
-  },
-  'clay': {
-    name: 'Clay Soil',
-    description: 'Heavy soil with small particles',
-    idealPenetration: {
-      min: 10,
-      max: 15,
-    },
-    compactionRisk: 'High',
-  },
-};
-
-// Remediation methods based on severity
-const remediationMethods = {
-  low: [
-    {
-      method: 'Cover Cropping',
-      description: 'Plant cover crops with deep roots like radishes or alfalfa',
-      timing: 'Plant in fall or early spring',
-      benefits: [
-        'Improves soil structure',
-        'Adds organic matter',
-        'Prevents future compaction'
-      ],
-    },
-    {
-      method: 'Mulching',
-      description: 'Apply organic mulch to soil surface',
-      timing: 'Any time during growing season',
-      benefits: [
-        'Protects soil structure',
-        'Retains moisture',
-        'Encourages earthworm activity'
-      ],
-    },
-  ],
-  moderate: [
-    {
-      method: 'Shallow Tillage',
-      description: 'Light cultivation of top soil layer',
-      timing: 'When soil is moderately moist',
-      benefits: [
-        'Breaks up surface compaction',
-        'Improves water infiltration',
-        'Preserves soil structure'
-      ],
-    },
-    {
-      method: 'Organic Matter Addition',
-      description: 'Incorporate compost or other organic materials',
-      timing: 'Before planting season',
-      benefits: [
-        'Improves soil structure',
-        'Enhances drainage',
-        'Increases biological activity'
-      ],
-    },
-  ],
-  severe: [
-    {
-      method: 'Deep Tillage',
-      description: 'Mechanical breaking of compacted layers',
-      timing: 'When soil is dry enough',
-      benefits: [
-        'Breaks up hardpan',
-        'Improves root penetration',
-        'Enhances drainage'
-      ],
-    },
-    {
-      method: 'Subsoiling',
-      description: 'Deep soil loosening without inversion',
-      timing: 'Late summer or early fall',
-      benefits: [
-        'Breaks deep compaction',
-        'Minimal soil disturbance',
-        'Improves water movement'
-      ],
-    },
-  ],
-};
-
-// Prevention methods
-const preventionMethods = [
-  {
-    title: 'Traffic Management',
-    practices: [
-      'Establish permanent traffic lanes',
-      'Avoid working wet soil',
-      'Use controlled traffic farming',
-    ],
-  },
-  {
-    title: 'Equipment Modifications',
-    practices: [
-      'Use low-pressure tires',
-      'Reduce equipment weight',
-      'Install dual wheels when possible',
-    ],
-  },
-  {
-    title: 'Soil Management',
-    practices: [
-      'Maintain organic matter levels',
-      'Practice crop rotation',
-      'Use cover crops during off-season',
-    ],
-  },
-];
+import { SocialShare } from '../../common/SocialShare';
 
 const CompactionTest = () => {
-  const [activeStep, setActiveStep] = useState(0);
-  const [soilType, setSoilType] = useState('');
-  const [moistureLevel, setMoistureLevel] = useState('');
   const [penetrationDepth, setPenetrationDepth] = useState('');
-  const [results, setResults] = useState(null);
+  const [soilMoisture, setSoilMoisture] = useState('moderate');
+  const [soilType, setSoilType] = useState('');
+  const [result, setResult] = useState(null);
 
-  const handleNext = () => {
-    setActiveStep((prevStep) => prevStep + 1);
-    if (activeStep === 2) {
-      analyzeCompaction();
+  const calculateCompaction = () => {
+    if (!penetrationDepth || !soilType) return;
+
+    const depth = parseFloat(penetrationDepth);
+    let compactionLevel;
+    let recommendations = [];
+
+    // Basic compaction assessment
+    if (depth < 3) {
+      compactionLevel = 'Severe';
+      recommendations = [
+        'Deep tillage or subsoiling may be necessary',
+        'Add organic matter to improve soil structure',
+        'Consider cover crops with deep root systems',
+        'Minimize traffic on wet soil'
+      ];
+    } else if (depth < 6) {
+      compactionLevel = 'Moderate';
+      recommendations = [
+        'Incorporate organic matter',
+        'Use cover crops to improve soil structure',
+        'Avoid working wet soil',
+        'Consider reduced tillage practices'
+      ];
+    } else {
+      compactionLevel = 'Low';
+      recommendations = [
+        'Maintain current soil management practices',
+        'Continue monitoring soil compaction',
+        'Practice crop rotation',
+        'Use mulch to protect soil surface'
+      ];
     }
-  };
 
-  const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-    setSoilType('');
-    setMoistureLevel('');
-    setPenetrationDepth('');
-    setResults(null);
-  };
-
-  const analyzeCompaction = () => {
-    const soilInfo = soilTypes[soilType];
-    const depth = Number(penetrationDepth);
-    let severity = 'low';
-    let status = '';
-
-    if (depth < soilInfo.idealPenetration.min * 0.5) {
-      severity = 'severe';
-      status = 'Severe Compaction';
-    } else if (depth < soilInfo.idealPenetration.min * 0.75) {
-      severity = 'moderate';
-      status = 'Moderate Compaction';
-    } else if (depth >= soilInfo.idealPenetration.min) {
-      severity = 'low';
-      status = 'Good Condition';
-    }
-
-    setResults({
-      severity,
-      status,
-      soilInfo,
-      recommendations: remediationMethods[severity],
+    setResult({
+      compactionLevel,
+      recommendations,
+      penetrationDepth: depth
     });
   };
 
-  const steps = [
-    {
-      label: 'Soil Type',
-      content: (
-        <FormControl fullWidth>
-          <InputLabel>Select Soil Type</InputLabel>
-          <Select
-            value={soilType}
-            label="Select Soil Type"
-            onChange={(e) => setSoilType(e.target.value)}
-          >
-            {Object.entries(soilTypes).map(([key, type]) => (
-              <MenuItem key={key} value={key}>
-                {type.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      ),
-    },
-    {
-      label: 'Soil Moisture',
-      content: (
-        <FormControl component="fieldset">
-          <Typography variant="subtitle2" gutterBottom>
-            Current Soil Moisture Level
-          </Typography>
-          <RadioGroup
-            value={moistureLevel}
-            onChange={(e) => setMoistureLevel(e.target.value)}
-          >
-            <FormControlLabel value="dry" control={<Radio />} label="Dry (soil crumbles easily)" />
-            <FormControlLabel value="moist" control={<Radio />} label="Moist (forms ball when squeezed)" />
-            <FormControlLabel value="wet" control={<Radio />} label="Wet (water can be squeezed out)" />
-          </RadioGroup>
-        </FormControl>
-      ),
-    },
-    {
-      label: 'Penetration Test',
-      content: (
-        <Box>
-          <Typography variant="subtitle2" gutterBottom>
-            Measure Penetration Depth
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Push a soil probe or penetrometer into the soil with steady pressure.
-            Record the depth at which significant resistance is felt.
-          </Typography>
-          <TextField
-            fullWidth
-            label="Penetration Depth (inches)"
-            type="number"
-            value={penetrationDepth}
-            onChange={(e) => setPenetrationDepth(e.target.value)}
-            InputProps={{
-              inputProps: { min: 0, max: 36 },
-            }}
-          />
-        </Box>
-      ),
-    },
-  ];
-
   return (
-    <Card>
-      <CardContent>
-        <Typography variant="h5" gutterBottom>
-          Soil Compaction Test
+    <Box>
+      {/* Comprehensive Introduction */}
+      <Box mb={4}>
+        <Typography variant="h4" gutterBottom>
+          Soil Compaction Test Calculator
         </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
-          Assess soil compaction levels and get recommendations for improvement.
+        <Typography variant="body1" paragraph>
+          Soil compaction is a critical factor affecting plant growth, water movement, and root development. 
+          This calculator helps you assess soil compaction levels and provides specific recommendations for 
+          soil management based on your test results.
         </Typography>
 
-        <Grid container spacing={3}>
+        {/* Educational Content Section */}
+        <Grid container spacing={3} mb={4}>
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 2 }}>
-              <Stepper activeStep={activeStep} orientation="vertical">
-                {steps.map((step, index) => (
-                  <Step key={step.label}>
-                    <StepLabel>{step.label}</StepLabel>
-                    <StepContent>
-                      {step.content}
-                      <Box sx={{ mt: 2 }}>
-                        <Button
-                          variant="contained"
-                          onClick={handleNext}
-                          sx={{ mr: 1 }}
-                          disabled={
-                            (index === 0 && !soilType) ||
-                            (index === 1 && !moistureLevel) ||
-                            (index === 2 && !penetrationDepth)
-                          }
-                        >
-                          {index === steps.length - 1 ? 'Analyze' : 'Continue'}
-                        </Button>
-                        {index > 0 && (
-                          <Button onClick={handleBack} sx={{ mr: 1 }}>
-                            Back
-                          </Button>
-                        )}
-                      </Box>
-                    </StepContent>
-                  </Step>
-                ))}
-              </Stepper>
-            </Paper>
-          </Grid>
-
-          {results && (
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">
-                    Analysis Results
-                  </Typography>
-                  <Chip
-                    icon={results.severity === 'low' ? <CheckIcon /> : <WarningIcon />}
-                    label={results.status}
-                    color={results.severity === 'low' ? 'success' : results.severity === 'moderate' ? 'warning' : 'error'}
-                    sx={{ ml: 2 }}
-                  />
-                </Box>
-
-                <Alert 
-                  severity={results.severity === 'low' ? 'success' : results.severity === 'moderate' ? 'warning' : 'error'}
-                  sx={{ mb: 2 }}
-                >
-                  {`Penetration depth (${penetrationDepth}") indicates ${results.status.toLowerCase()} for ${results.soilInfo.name}.`}
-                </Alert>
-
-                <Typography variant="subtitle1" gutterBottom>
-                  Recommended Remediation Methods
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Understanding Soil Compaction
                 </Typography>
-                <List>
-                  {results.recommendations.map((method, index) => (
-                    <React.Fragment key={method.method}>
-                      <ListItem>
-                        <ListItemIcon>
-                          <InfoIcon color="primary" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={method.method}
-                          secondary={
-                            <>
-                              <Typography variant="body2">
-                                {method.description}
-                              </Typography>
-                              <Typography variant="body2">
-                                Timing: {method.timing}
-                              </Typography>
-                              <Box sx={{ mt: 1 }}>
-                                {method.benefits.map((benefit, i) => (
-                                  <Chip
-                                    key={i}
-                                    label={benefit}
-                                    size="small"
-                                    variant="outlined"
-                                    sx={{ mr: 1, mb: 1 }}
-                                  />
-                                ))}
-                              </Box>
-                            </>
-                          }
-                        />
-                      </ListItem>
-                      {index < results.recommendations.length - 1 && <Divider />}
-                    </React.Fragment>
-                  ))}
+                <Typography variant="body2" paragraph>
+                  Soil compaction occurs when soil particles are pressed together, reducing the pore space between them. 
+                  This can lead to:
+                </Typography>
+                <List dense>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Restricted Root Growth" 
+                      secondary="Roots struggle to penetrate compacted soil, limiting plant growth"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Poor Water Infiltration" 
+                      secondary="Water pools on the surface instead of being absorbed"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Reduced Aeration" 
+                      secondary="Less oxygen available for root respiration and soil microbes"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Nutrient Deficiencies" 
+                      secondary="Limited root access to soil nutrients"
+                    />
+                  </ListItem>
                 </List>
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="subtitle1" gutterBottom>
-                  Prevention Methods
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Causes of Soil Compaction
                 </Typography>
-                {preventionMethods.map((category, index) => (
-                  <Box key={category.title} sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" color="primary" gutterBottom>
-                      {category.title}
-                    </Typography>
-                    <List dense>
-                      {category.practices.map((practice, i) => (
-                        <ListItem key={i}>
-                          <ListItemIcon>
-                            <CheckIcon color="success" fontSize="small" />
-                          </ListItemIcon>
-                          <ListItemText primary={practice} />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                ))}
-
-                <Box sx={{ mt: 2 }}>
-                  <Button onClick={handleReset} variant="outlined">
-                    Start New Test
-                  </Button>
-                </Box>
-              </Paper>
-            </Grid>
-          )}
+                <List dense>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Heavy Equipment" 
+                      secondary="Machinery traffic, especially on wet soil"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Excessive Tillage" 
+                      secondary="Repeated cultivation, particularly at the same depth"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Poor Drainage" 
+                      secondary="Consistently wet soil conditions"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Lack of Organic Matter" 
+                      secondary="Insufficient soil structure and stability"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Foot Traffic" 
+                      secondary="Regular walking paths and high-traffic areas"
+                    />
+                  </ListItem>
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </CardContent>
-    </Card>
+
+        {/* How to Test Section */}
+        <Card sx={{ mb: 4 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              How to Perform a Soil Compaction Test
+            </Typography>
+            <Typography variant="body2" paragraph>
+              1. Select Your Testing Tool:
+              <br />• Use a penetrometer (soil compaction tester) for most accurate results
+              <br />• A wire flag or sturdy metal rod can work as an alternative
+              <br />• Ensure the tool has measurement markings
+            </Typography>
+            <Typography variant="body2" paragraph>
+              2. Prepare the Test Area:
+              <br />• Clear surface debris
+              <br />• Mark multiple testing spots for a representative sample
+              <br />• Note recent rainfall or irrigation
+            </Typography>
+            <Typography variant="body2" paragraph>
+              3. Perform the Test:
+              <br />• Push the testing tool into the soil at a steady rate
+              <br />• Note the depth at which resistance increases significantly
+              <br />• Record measurements from multiple locations
+            </Typography>
+            <Typography variant="body2">
+              4. Enter your results in the calculator below for analysis
+            </Typography>
+          </CardContent>
+        </Card>
+
+        <Alert severity="info" sx={{ mb: 4 }}>
+          <Typography variant="body2">
+            <strong>Pro Tip:</strong> Test when soil moisture is moderate (not too wet or dry) for most accurate results. 
+            Different soil types will have different natural resistance levels, so consider your soil type when interpreting results.
+          </Typography>
+        </Alert>
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Calculator Section */}
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Calculate Soil Compaction
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Penetration Depth (inches)"
+              type="number"
+              value={penetrationDepth}
+              onChange={(e) => setPenetrationDepth(e.target.value)}
+              helperText="Enter the depth at which significant resistance was felt"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Soil Type"
+              value={soilType}
+              onChange={(e) => setSoilType(e.target.value)}
+              helperText="Enter your soil type (e.g., clay, loam, sandy)"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Soil Moisture Level</FormLabel>
+              <RadioGroup
+                row
+                value={soilMoisture}
+                onChange={(e) => setSoilMoisture(e.target.value)}
+              >
+                <FormControlLabel value="dry" control={<Radio />} label="Dry" />
+                <FormControlLabel value="moderate" control={<Radio />} label="Moderate" />
+                <FormControlLabel value="wet" control={<Radio />} label="Wet" />
+              </RadioGroup>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={calculateCompaction}
+              fullWidth
+            >
+              Analyze Compaction
+            </Button>
+          </Grid>
+        </Grid>
+
+        {result && (
+          <Box mt={3}>
+            <Typography variant="h6" gutterBottom>
+              Compaction Analysis Results
+            </Typography>
+            <Alert 
+              severity={
+                result.compactionLevel === 'Severe' ? 'error' : 
+                result.compactionLevel === 'Moderate' ? 'warning' : 
+                'success'
+              }
+              sx={{ mb: 3 }}
+            >
+              <Typography variant="subtitle1" gutterBottom>
+                Compaction Level: {result.compactionLevel}
+              </Typography>
+              <Typography variant="body2">
+                Based on penetration depth of {result.penetrationDepth} inches
+              </Typography>
+            </Alert>
+
+            <Typography variant="subtitle1" gutterBottom>
+              Recommendations:
+            </Typography>
+            <List>
+              {result.recommendations.map((rec, index) => (
+                <ListItem key={index}>
+                  <ListItemText primary={rec} />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        )}
+      </Paper>
+
+      {/* Additional Resources Section */}
+      <Card sx={{ mt: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Preventing Soil Compaction
+          </Typography>
+          <Typography variant="body2" paragraph>
+            <strong>Best Management Practices:</strong>
+          </Typography>
+          <Typography variant="body2" paragraph>
+            1. Traffic Management:
+            <br />• Establish permanent traffic lanes
+            <br />• Avoid driving on wet soil
+            <br />• Use flotation tires or tracks
+            <br />• Minimize unnecessary equipment passes
+          </Typography>
+          <Typography variant="body2" paragraph>
+            2. Soil Structure Improvement:
+            <br />• Add organic matter regularly
+            <br />• Use cover crops with deep roots
+            <br />• Practice crop rotation
+            <br />• Maintain good drainage
+          </Typography>
+          <Typography variant="body2" paragraph>
+            3. Timing Considerations:
+            <br />• Work soil at proper moisture content
+            <br />• Plan operations to avoid wet conditions
+            <br />• Allow adequate time for soil to dry
+          </Typography>
+          <Typography variant="body2">
+            Regular monitoring and proactive management are essential for maintaining good soil structure 
+            and preventing compaction issues before they become severe.
+          </Typography>
+        </CardContent>
+      </Card>
+
+      <SocialShare />
+    </Box>
   );
 };
 

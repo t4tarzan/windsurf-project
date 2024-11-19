@@ -16,11 +16,64 @@ import {
   IconButton,
   MenuItem,
   Box,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
+  Info as InfoIcon,
+  ExpandMore as ExpandMoreIcon,
+  Receipt as ReceiptIcon,
+  Savings as SavingsIcon,
+  ShoppingCart as ShoppingCartIcon,
+  Assignment as AssignmentIcon,
+  TipsAndUpdates as TipsIcon,
 } from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `Input cost calculation is crucial for farm financial planning and profitability analysis. This tool helps farmers track and analyze the costs of seeds, fertilizers, pesticides, and other farming inputs to optimize spending and improve profit margins.`,
+  
+  categories: [
+    {
+      title: 'Direct Material Inputs',
+      items: ['Seeds', 'Fertilizers', 'Pesticides', 'Irrigation supplies'],
+      impact: 'Core production costs'
+    },
+    {
+      title: 'Operational Inputs',
+      items: ['Fuel', 'Equipment maintenance', 'Labor', 'Utilities'],
+      impact: 'Day-to-day running costs'
+    },
+    {
+      title: 'Seasonal Inputs',
+      items: ['Soil amendments', 'Cover crop seeds', 'Season-specific supplies'],
+      impact: 'Periodic investments'
+    }
+  ],
+
+  costReductionStrategies: [
+    'Bulk purchasing of frequently used inputs',
+    'Timing purchases during off-peak seasons',
+    'Comparing prices from multiple suppliers',
+    'Implementing precise application methods',
+    'Regular maintenance to prevent waste'
+  ],
+
+  recordKeepingTips: [
+    'Maintain detailed purchase records',
+    'Track usage rates and patterns',
+    'Document supplier information',
+    'Monitor price trends',
+    'Keep inventory updated'
+  ]
+};
 
 const categories = {
   'Seeds & Plants': [
@@ -122,8 +175,84 @@ const InputCostCalculator = () => {
     <Card>
       <CardContent>
         <Typography variant="h5" gutterBottom>
-          Input Cost Calculator
+          Farm Input Cost Calculator
         </Typography>
+
+        {/* Educational Content */}
+        <Box mt={3} mb={3}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Understanding Farm Input Costs</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography paragraph>{educationalContent.introduction}</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Input Categories</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.categories.map((category, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <ShoppingCartIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={category.title}
+                      secondary={
+                        <>
+                          <Typography variant="body2">Items: {category.items.join(', ')}</Typography>
+                          <Typography variant="body2">Impact: {category.impact}</Typography>
+                        </>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Cost Reduction Strategies</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.costReductionStrategies.map((strategy, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <SavingsIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={strategy} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Record Keeping Best Practices</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.recordKeepingTips.map((tip, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <AssignmentIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={tip} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
+
+        {/* Calculator Content */}
         <Typography variant="body2" color="textSecondary" paragraph>
           Track and calculate your farming input costs by category.
         </Typography>

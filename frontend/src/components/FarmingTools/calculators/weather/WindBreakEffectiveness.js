@@ -14,8 +14,117 @@ import {
   Alert,
   Slider,
   Paper,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
-import { Air, ForestOutlined, Speed, Height } from '@mui/icons-material';
+import { 
+  Air, 
+  ForestOutlined, 
+  Speed, 
+  Height,
+  ExpandMore as ExpandMoreIcon,
+  Info as InfoIcon,
+  Science as ScienceIcon,
+  Nature as NatureIcon 
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `Windbreaks are essential agricultural features that protect crops, soil, and livestock from wind damage. Understanding windbreak effectiveness helps optimize their design and placement for maximum benefit.`,
+  
+  keyComponents: [
+    {
+      component: 'Height',
+      description: 'Determines the protected area downwind',
+      impact: 'Protection extends 10-30 times the windbreak height'
+    },
+    {
+      component: 'Porosity',
+      description: 'The amount of open space in the windbreak',
+      impact: 'Affects wind speed reduction and turbulence'
+    },
+    {
+      component: 'Orientation',
+      description: 'Alignment relative to prevailing winds',
+      impact: 'Determines effectiveness in blocking problematic winds'
+    },
+    {
+      component: 'Length',
+      description: 'Total linear distance of the windbreak',
+      impact: 'Prevents wind from wrapping around the ends'
+    }
+  ],
+
+  speciesGuide: {
+    conifer: {
+      type: 'Conifer Trees',
+      characteristics: [
+        'Year-round protection',
+        'Dense foliage',
+        'Slow growth rate',
+        'Long lifespan'
+      ]
+    },
+    deciduous: {
+      type: 'Deciduous Trees',
+      characteristics: [
+        'Seasonal protection',
+        'Variable density',
+        'Fast growth rate',
+        'Deep root systems'
+      ]
+    },
+    shrub: {
+      type: 'Dense Shrubs',
+      characteristics: [
+        'Low-level protection',
+        'High density',
+        'Easy maintenance',
+        'Quick establishment'
+      ]
+    },
+    mixed: {
+      type: 'Mixed Planting',
+      characteristics: [
+        'Multi-level protection',
+        'Biodiversity benefits',
+        'Adaptable design',
+        'Enhanced wildlife habitat'
+      ]
+    }
+  },
+
+  benefits: [
+    {
+      benefit: 'Crop Protection',
+      description: 'Reduces physical damage and moisture stress',
+      impact: 'Improved yield and quality'
+    },
+    {
+      benefit: 'Soil Conservation',
+      description: 'Prevents wind erosion and soil loss',
+      impact: 'Maintains topsoil and fertility'
+    },
+    {
+      benefit: 'Microclimate Control',
+      description: 'Moderates temperature and humidity',
+      impact: 'Better growing conditions'
+    },
+    {
+      benefit: 'Snow Management',
+      description: 'Controls snow distribution and drifting',
+      impact: 'Better moisture distribution and access'
+    }
+  ]
+};
+
+const speciesOptions = [
+  { value: 'conifer', label: 'Conifer Trees', density: 0.5 },
+  { value: 'deciduous', label: 'Deciduous Trees', density: 0.6 },
+  { value: 'shrub', label: 'Dense Shrubs', density: 0.7 },
+  { value: 'mixed', label: 'Mixed Planting', density: 0.55 },
+];
 
 const WindBreakEffectiveness = () => {
   const [inputs, setInputs] = useState({
@@ -31,13 +140,6 @@ const WindBreakEffectiveness = () => {
 
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
-
-  const speciesOptions = [
-    { value: 'conifer', label: 'Conifer Trees', density: 0.5 },
-    { value: 'deciduous', label: 'Deciduous Trees', density: 0.6 },
-    { value: 'shrub', label: 'Dense Shrubs', density: 0.7 },
-    { value: 'mixed', label: 'Mixed Planting', density: 0.55 },
-  ];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -192,216 +294,315 @@ const WindBreakEffectiveness = () => {
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Typography variant="h5" gutterBottom>
-          Wind Break Effectiveness Calculator
-        </Typography>
-        
-        <Typography variant="body2" color="textSecondary" paragraph>
-          Calculate the effectiveness of your windbreak based on its dimensions, design, and local wind conditions.
-        </Typography>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        Windbreak Effectiveness Calculator
+      </Typography>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Windbreak Height (m)"
-              name="windbreakHeight"
-              value={inputs.windbreakHeight}
-              onChange={handleInputChange}
-              type="number"
-              InputProps={{
-                startAdornment: <Height color="action" sx={{ mr: 1 }} />,
-              }}
-            />
-          </Grid>
+      {/* Educational Content Section */}
+      <Box sx={{ mb: 4 }}>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <Air sx={{ mr: 1 }} /> About Windbreaks
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+          </AccordionDetails>
+        </Accordion>
 
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Windbreak Length (m)"
-              name="windbreakLength"
-              value={inputs.windbreakLength}
-              onChange={handleInputChange}
-              type="number"
-              InputProps={{
-                startAdornment: <ForestOutlined color="action" sx={{ mr: 1 }} />,
-              }}
-            />
-          </Grid>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <ScienceIcon sx={{ mr: 1 }} /> Key Components
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {educationalContent.keyComponents.map((component, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{component.component}</Typography>
+                      <Typography paragraph>{component.description}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Impact: {component.impact}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
 
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Wind Speed (m/s)"
-              name="windSpeed"
-              value={inputs.windSpeed}
-              onChange={handleInputChange}
-              type="number"
-              InputProps={{
-                startAdornment: <Speed color="action" sx={{ mr: 1 }} />,
-              }}
-            />
-          </Grid>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <ForestOutlined sx={{ mr: 1 }} /> Species Guide
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {Object.entries(educationalContent.speciesGuide).map(([key, species]) => (
+                <Grid item xs={12} md={6} key={key}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{species.type}</Typography>
+                      <ul>
+                        {species.characteristics.map((characteristic, index) => (
+                          <li key={index}>
+                            <Typography variant="body2">{characteristic}</Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
 
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Species Type</InputLabel>
-              <Select
-                name="species"
-                value={inputs.species}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <NatureIcon sx={{ mr: 1 }} /> Benefits
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {educationalContent.benefits.map((item, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{item.benefit}</Typography>
+                      <Typography paragraph>{item.description}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Impact: {item.impact}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+
+      {/* Calculator Section */}
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Wind Break Effectiveness Calculator
+          </Typography>
+          
+          <Typography variant="body2" color="textSecondary" paragraph>
+            Calculate the effectiveness of your windbreak based on its dimensions, design, and local wind conditions.
+          </Typography>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Windbreak Height (m)"
+                name="windbreakHeight"
+                value={inputs.windbreakHeight}
                 onChange={handleInputChange}
-                label="Species Type"
-              >
-                {speciesOptions.map(option => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Number of Rows"
-              name="rows"
-              value={inputs.rows}
-              onChange={handleInputChange}
-              type="number"
-              InputProps={{
-                startAdornment: <ForestOutlined color="action" sx={{ mr: 1 }} />,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography gutterBottom>
-              Porosity (%)
-            </Typography>
-            <Slider
-              value={inputs.porosity}
-              onChange={handleSliderChange('porosity')}
-              valueLabelDisplay="auto"
-              min={0}
-              max={100}
-              marks={[
-                { value: 0, label: 'Solid' },
-                { value: 50, label: 'Medium' },
-                { value: 100, label: 'Open' },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography gutterBottom>
-              Wind Direction (degrees)
-            </Typography>
-            <Slider
-              value={inputs.windDirection}
-              onChange={handleSliderChange('windDirection')}
-              valueLabelDisplay="auto"
-              min={0}
-              max={360}
-              marks={[
-                { value: 0, label: 'N' },
-                { value: 90, label: 'E' },
-                { value: 180, label: 'S' },
-                { value: 270, label: 'W' },
-                { value: 360, label: 'N' },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography gutterBottom>
-              Windbreak Orientation (degrees)
-            </Typography>
-            <Slider
-              value={inputs.orientation}
-              onChange={handleSliderChange('orientation')}
-              valueLabelDisplay="auto"
-              min={0}
-              max={360}
-              marks={[
-                { value: 0, label: 'N-S' },
-                { value: 90, label: 'E-W' },
-                { value: 180, label: 'N-S' },
-                { value: 270, label: 'E-W' },
-                { value: 360, label: 'N-S' },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={calculateWindbreakEffectiveness}
-              fullWidth
-              startIcon={<Air />}
-            >
-              Calculate Effectiveness
-            </Button>
-          </Grid>
-
-          {error && (
-            <Grid item xs={12}>
-              <Alert severity="error">{error}</Alert>
+                type="number"
+                InputProps={{
+                  startAdornment: <Height color="action" sx={{ mr: 1 }} />,
+                }}
+              />
             </Grid>
-          )}
 
-          {results && (
-            <Grid item xs={12}>
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Results
-                </Typography>
-                
-                <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
-                  <Typography variant="body1" gutterBottom>
-                    Effectiveness Score: {results.effectivenessScore}%
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    Protected Area: {results.protectedArea} m²
-                  </Typography>
-                  <Typography variant="body1">
-                    Maximum Protection Distance: {results.maxDistance} × height
-                  </Typography>
-                </Paper>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Windbreak Length (m)"
+                name="windbreakLength"
+                value={inputs.windbreakLength}
+                onChange={handleInputChange}
+                type="number"
+                InputProps={{
+                  startAdornment: <ForestOutlined color="action" sx={{ mr: 1 }} />,
+                }}
+              />
+            </Grid>
 
-                <Typography variant="h6" gutterBottom>
-                  Wind Speed Reduction
-                </Typography>
-                <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
-                  {results.windReductions.map((reduction, index) => (
-                    <Typography key={index} variant="body1" gutterBottom>
-                      At {reduction.distance}m: {reduction.reduction}% reduction
-                      (Wind speed: {reduction.resultingSpeed} m/s)
-                    </Typography>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Wind Speed (m/s)"
+                name="windSpeed"
+                value={inputs.windSpeed}
+                onChange={handleInputChange}
+                type="number"
+                InputProps={{
+                  startAdornment: <Speed color="action" sx={{ mr: 1 }} />,
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Species Type</InputLabel>
+                <Select
+                  name="species"
+                  value={inputs.species}
+                  onChange={handleInputChange}
+                  label="Species Type"
+                >
+                  {speciesOptions.map(option => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
                   ))}
-                </Paper>
-
-                <Typography variant="h6" gutterBottom>
-                  Recommendations
-                </Typography>
-                <Paper elevation={2} sx={{ p: 2 }}>
-                  <ul style={{ marginTop: 0 }}>
-                    {results.recommendations.map((rec, index) => (
-                      <li key={index}>
-                        <Typography variant="body1">{rec}</Typography>
-                      </li>
-                    ))}
-                  </ul>
-                </Paper>
-              </Box>
+                </Select>
+              </FormControl>
             </Grid>
-          )}
-        </Grid>
-      </CardContent>
-    </Card>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Number of Rows"
+                name="rows"
+                value={inputs.rows}
+                onChange={handleInputChange}
+                type="number"
+                InputProps={{
+                  startAdornment: <ForestOutlined color="action" sx={{ mr: 1 }} />,
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography gutterBottom>
+                Porosity (%)
+              </Typography>
+              <Slider
+                value={inputs.porosity}
+                onChange={handleSliderChange('porosity')}
+                valueLabelDisplay="auto"
+                min={0}
+                max={100}
+                marks={[
+                  { value: 0, label: 'Solid' },
+                  { value: 50, label: 'Medium' },
+                  { value: 100, label: 'Open' },
+                ]}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography gutterBottom>
+                Wind Direction (degrees)
+              </Typography>
+              <Slider
+                value={inputs.windDirection}
+                onChange={handleSliderChange('windDirection')}
+                valueLabelDisplay="auto"
+                min={0}
+                max={360}
+                marks={[
+                  { value: 0, label: 'N' },
+                  { value: 90, label: 'E' },
+                  { value: 180, label: 'S' },
+                  { value: 270, label: 'W' },
+                  { value: 360, label: 'N' },
+                ]}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography gutterBottom>
+                Windbreak Orientation (degrees)
+              </Typography>
+              <Slider
+                value={inputs.orientation}
+                onChange={handleSliderChange('orientation')}
+                valueLabelDisplay="auto"
+                min={0}
+                max={360}
+                marks={[
+                  { value: 0, label: 'N-S' },
+                  { value: 90, label: 'E-W' },
+                  { value: 180, label: 'N-S' },
+                  { value: 270, label: 'E-W' },
+                  { value: 360, label: 'N-S' },
+                ]}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={calculateWindbreakEffectiveness}
+                fullWidth
+                startIcon={<Air />}
+              >
+                Calculate Effectiveness
+              </Button>
+            </Grid>
+
+            {error && (
+              <Grid item xs={12}>
+                <Alert severity="error">{error}</Alert>
+              </Grid>
+            )}
+
+            {results && (
+              <Grid item xs={12}>
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Results
+                  </Typography>
+                  
+                  <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
+                    <Typography variant="body1" gutterBottom>
+                      Effectiveness Score: {results.effectivenessScore}%
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      Protected Area: {results.protectedArea} m²
+                    </Typography>
+                    <Typography variant="body1">
+                      Maximum Protection Distance: {results.maxDistance} × height
+                    </Typography>
+                  </Paper>
+
+                  <Typography variant="h6" gutterBottom>
+                    Wind Speed Reduction
+                  </Typography>
+                  <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
+                    {results.windReductions.map((reduction, index) => (
+                      <Typography key={index} variant="body1" gutterBottom>
+                        At {reduction.distance}m: {reduction.reduction}% reduction
+                        (Wind speed: {reduction.resultingSpeed} m/s)
+                      </Typography>
+                    ))}
+                  </Paper>
+
+                  <Typography variant="h6" gutterBottom>
+                    Recommendations
+                  </Typography>
+                  <Paper elevation={2} sx={{ p: 2 }}>
+                    <ul style={{ marginTop: 0 }}>
+                      {results.recommendations.map((rec, index) => (
+                        <li key={index}>
+                          <Typography variant="body1">{rec}</Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  </Paper>
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

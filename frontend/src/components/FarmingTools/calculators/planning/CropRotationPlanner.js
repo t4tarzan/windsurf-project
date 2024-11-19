@@ -18,7 +18,21 @@ import {
   TableHead,
   TableRow,
   Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
+import {
+  ExpandMore as ExpandMoreIcon,
+  Agriculture as AgricultureIcon,
+  Nature as NatureIcon,
+  Science as ScienceIcon,
+  Warning as WarningIcon,
+} from '@mui/icons-material';
 
 const cropFamilies = {
   'solanaceae': {
@@ -77,6 +91,50 @@ const cropFamilies = {
     avoid: ['chenopodiaceae'],
     waitYears: 2
   }
+};
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `Crop rotation is a systematic approach to deciding which crops to plant where in your garden or field from one season to the next. This practice helps maintain soil health, manage pests and diseases, and optimize nutrient usage for better yields.`,
+  
+  benefits: [
+    {
+      title: 'Soil Health Management',
+      description: 'Different crops have different nutrient needs and root depths',
+      impact: 'Prevents soil depletion and improves structure'
+    },
+    {
+      title: 'Pest and Disease Control',
+      description: 'Breaking pest and disease cycles by moving crop families',
+      impact: 'Reduces need for chemical interventions'
+    },
+    {
+      title: 'Nutrient Management',
+      description: 'Alternating heavy feeders with soil builders',
+      impact: 'Optimizes nutrient availability'
+    },
+    {
+      title: 'Weed Suppression',
+      description: 'Different crops suppress different types of weeds',
+      impact: 'Natural weed control'
+    }
+  ],
+
+  bestPractices: [
+    'Follow recommended waiting periods between same-family crops',
+    'Alternate between heavy feeders and soil builders',
+    'Consider cover crops in your rotation plan',
+    'Keep detailed records of crop locations and performance',
+    'Plan rotations 3-4 years in advance'
+  ],
+
+  commonMistakes: [
+    'Planting same-family crops in succession',
+    'Ignoring soil-building crops in the rotation',
+    'Not maintaining proper records',
+    'Overlooking cover crops',
+    'Planning only one season ahead'
+  ]
 };
 
 const CropRotationPlanner = () => {
@@ -315,6 +373,71 @@ const CropRotationPlanner = () => {
           </Box>
         </Box>
       )}
+
+      <Box mt={3}>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Introduction to Crop Rotation</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="body1">{educationalContent.introduction}</Typography>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Benefits of Crop Rotation</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.benefits.map((benefit, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <AgricultureIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={benefit.title} secondary={benefit.description} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Best Practices for Crop Rotation</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.bestPractices.map((practice, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <NatureIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={practice} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Common Mistakes in Crop Rotation</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.commonMistakes.map((mistake, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <WarningIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={mistake} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
     </Paper>
   );
 };

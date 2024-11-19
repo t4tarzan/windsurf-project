@@ -9,27 +9,50 @@ import {
   Select,
   MenuItem,
   Box,
-  Paper,
-  Chip,
-  Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Rating,
+  TextField,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
   LocalHospital as TreatmentIcon,
   Nature as OrganicIcon,
   Science as ChemicalIcon,
-  Warning as WarningIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
+import TreatmentCard from '../../components/pest/TreatmentCard';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Treatment Guide provides comprehensive information about various pest and disease control methods, including both organic and chemical options. This tool helps farmers make informed decisions about treatment strategies.`,
+  
+  treatmentTypes: [
+    {
+      type: 'Cultural Control',
+      description: 'Methods that modify the environment or farming practices to reduce pest problems.',
+      examples: ['Crop rotation', 'Companion planting', 'Sanitation', 'Timing of planting']
+    },
+    {
+      type: 'Biological Control',
+      description: 'Using natural enemies to control pests.',
+      examples: ['Beneficial insects', 'Predatory mites', 'Parasitic wasps', 'Microbial pesticides']
+    },
+    {
+      type: 'Chemical Control',
+      description: 'Using synthetic pesticides when other methods are insufficient.',
+      examples: ['Insecticides', 'Fungicides', 'Herbicides', 'Growth regulators']
+    }
+  ],
+  
+  bestPractices: [
+    'Start with least toxic options first',
+    'Consider environmental impact',
+    'Follow label instructions carefully',
+    'Monitor treatment effectiveness',
+    'Rotate treatments to prevent resistance'
+  ]
+};
 
 const treatmentDatabase = {
   'organic_sprays': {
@@ -206,22 +229,35 @@ const treatmentDatabase = {
 };
 
 const TreatmentGuide = () => {
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedTreatment, setSelectedTreatment] = useState(null);
+  const [selectedType, setSelectedType] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredTreatments, setFilteredTreatments] = useState([]);
 
-  const handleCategoryChange = (event) => {
-    setSelectedCategory(event.target.value);
-    setSelectedTreatment(null);
+  const handleSearch = (event) => {
+    const term = event.target.value.toLowerCase();
+    setSearchTerm(term);
+    
+    if (term) {
+      const filtered = Object.entries(treatmentDatabase).filter(([key, treatment]) => {
+        return treatment.name.toLowerCase().includes(term) ||
+               treatment.type.toLowerCase().includes(term) ||
+               treatment.targetPests.some(pest => pest.toLowerCase().includes(term));
+      });
+      setFilteredTreatments(filtered);
+    } else {
+      setFilteredTreatments([]);
+    }
   };
 
-  const renderTreatmentIcon = (type) => {
-    switch (type) {
-      case 'Organic':
-        return <OrganicIcon color="success" />;
-      case 'Synthetic':
-        return <ChemicalIcon color="error" />;
-      default:
-        return <TreatmentIcon color="primary" />;
+  const handleTypeSelect = (event) => {
+    setSelectedType(event.target.value);
+    if (event.target.value) {
+      const filtered = Object.entries(treatmentDatabase).filter(([key, treatment]) => 
+        treatment.type === event.target.value
+      );
+      setFilteredTreatments(filtered);
+    } else {
+      setFilteredTreatments([]);
     }
   };
 
@@ -229,166 +265,102 @@ const TreatmentGuide = () => {
     <Card>
       <CardContent>
         <Typography variant="h5" gutterBottom>
-          Pest Treatment Guide
-        </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
-          Explore different treatment methods and their appropriate applications.
+          Treatment Guide
         </Typography>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel>Select Treatment Category</InputLabel>
-              <Select
-                value={selectedCategory}
-                label="Select Treatment Category"
-                onChange={handleCategoryChange}
-              >
-                {Object.entries(treatmentDatabase).map(([key, category]) => (
-                  <MenuItem key={key} value={key}>
-                    {category.name}
-                  </MenuItem>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">About Treatment Options</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+            <Grid container spacing={2}>
+              {educationalContent.treatmentTypes.map((type) => (
+                <Grid item xs={12} md={4} key={type.type}>
+                  <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+                    <Typography variant="h6" gutterBottom>
+                      {type.type}
+                    </Typography>
+                    <Typography variant="body2" paragraph>
+                      {type.description}
+                    </Typography>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Examples:
+                    </Typography>
+                    <ul>
+                      {type.examples.map((example, index) => (
+                        <li key={index}>
+                          <Typography variant="body2">{example}</Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>Best Practices</Typography>
+              <Grid container spacing={1}>
+                {educationalContent.bestPractices.map((practice, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Typography variant="body2">• {practice}</Typography>
+                  </Grid>
                 ))}
-              </Select>
-            </FormControl>
+              </Grid>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+
+        <Box sx={{ mt: 3, mb: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Search Treatments"
+                variant="outlined"
+                value={searchTerm}
+                onChange={handleSearch}
+                InputProps={{
+                  startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Treatment Type</InputLabel>
+                <Select
+                  value={selectedType}
+                  onChange={handleTypeSelect}
+                  label="Treatment Type"
+                >
+                  <MenuItem value="">All Types</MenuItem>
+                  <MenuItem value="Organic">Organic</MenuItem>
+                  <MenuItem value="Chemical">Chemical</MenuItem>
+                  <MenuItem value="Biological">Biological</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
+        </Box>
 
-          {selectedCategory && (
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  {renderTreatmentIcon(treatmentDatabase[selectedCategory].type)}
-                  <Typography variant="h6" sx={{ ml: 1 }}>
-                    {treatmentDatabase[selectedCategory].name}
-                  </Typography>
-                  <Chip
-                    label={treatmentDatabase[selectedCategory].type}
-                    color={treatmentDatabase[selectedCategory].type === 'Organic' ? 'success' : 'default'}
-                    sx={{ ml: 2 }}
-                  />
-                </Box>
-                <Typography variant="body1" paragraph>
-                  {treatmentDatabase[selectedCategory].description}
-                </Typography>
+        {(searchTerm || selectedType) && filteredTreatments.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Treatment Options
+            </Typography>
+            {filteredTreatments.map(([key, treatment]) => (
+              <TreatmentCard key={key} treatment={treatment} />
+            ))}
+          </Box>
+        )}
 
-                <Divider sx={{ my: 2 }} />
-
-                {treatmentDatabase[selectedCategory].treatments.map((treatment, index) => (
-                  <Accordion
-                    key={index}
-                    expanded={selectedTreatment === index}
-                    onChange={() => setSelectedTreatment(selectedTreatment === index ? null : index)}
-                  >
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Grid container alignItems="center">
-                        <Grid item xs={12} sm={4}>
-                          <Typography>{treatment.name}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                          <Rating
-                            value={treatment.effectiveness}
-                            readOnly
-                            size="small"
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                          <Chip
-                            size="small"
-                            label={treatment.organicCertified ? 'Organic Certified' : 'Non-Organic'}
-                            color={treatment.organicCertified ? 'success' : 'default'}
-                          />
-                        </Grid>
-                      </Grid>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            Target Pests
-                          </Typography>
-                          <Box sx={{ mb: 2 }}>
-                            {treatment.targetPests.map((pest, i) => (
-                              <Chip
-                                key={i}
-                                label={pest}
-                                size="small"
-                                sx={{ m: 0.5 }}
-                                variant="outlined"
-                              />
-                            ))}
-                          </Box>
-                          <Typography variant="subtitle2" gutterBottom>
-                            Application Method
-                          </Typography>
-                          <Typography variant="body2" paragraph>
-                            {treatment.application}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            Precautions
-                          </Typography>
-                          {treatment.precautions.map((precaution, i) => (
-                            <Typography key={i} variant="body2" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <WarningIcon fontSize="small" sx={{ mr: 1, color: 'warning.main' }} />
-                              {precaution}
-                            </Typography>
-                          ))}
-                          <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                            Residual Period
-                          </Typography>
-                          <Typography variant="body2">
-                            {treatment.residualPeriod}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-              </Paper>
-            </Grid>
-          )}
-
-          {!selectedCategory && (
-            <Grid item xs={12}>
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Category</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Description</TableCell>
-                      <TableCell>Number of Treatments</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {Object.entries(treatmentDatabase).map(([key, category]) => (
-                      <TableRow key={key}>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            {renderTreatmentIcon(category.type)}
-                            <Typography sx={{ ml: 1 }}>
-                              {category.name}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={category.type}
-                            color={category.type === 'Organic' ? 'success' : 'default'}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>{category.description}</TableCell>
-                        <TableCell>{category.treatments.length}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Grid>
-          )}
-        </Grid>
+        {(searchTerm || selectedType) && filteredTreatments.length === 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body1" color="text.secondary">
+              No treatments found matching your criteria.
+            </Typography>
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

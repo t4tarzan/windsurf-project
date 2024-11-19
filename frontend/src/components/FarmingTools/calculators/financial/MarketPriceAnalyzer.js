@@ -21,11 +21,69 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import {
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Info as InfoIcon,
+  ExpandMore as ExpandMoreIcon,
+  Assessment as AssessmentIcon,
+  Timeline as TimelineIcon,
+  InsertChart as ChartIcon,
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Market Price Analyzer helps farmers make informed decisions about pricing their agricultural products across different market channels. This tool considers production costs, market demands, and competitive pricing to optimize revenue.`,
+  
+  marketFactors: [
+    {
+      title: 'Supply and Demand',
+      description: 'Balance between product availability and market demand',
+      impact: 'Directly affects price levels'
+    },
+    {
+      title: 'Seasonal Variations',
+      description: 'Price fluctuations based on growing seasons',
+      impact: 'Creates opportunities for premium pricing'
+    },
+    {
+      title: 'Quality Grades',
+      description: 'Product classification based on quality standards',
+      impact: 'Influences price differentiation'
+    },
+    {
+      title: 'Market Competition',
+      description: 'Number and strength of competitors in the market',
+      impact: 'Affects pricing power'
+    }
+  ],
+
+  pricingStrategies: [
+    'Premium pricing for early or late season produce',
+    'Volume discounts for bulk purchases',
+    'Quality-based price differentiation',
+    'Direct-to-consumer premium pricing',
+    'Contract pricing for stability'
+  ],
+
+  analysisTools: [
+    'Historical price tracking',
+    'Seasonal trend analysis',
+    'Competition monitoring',
+    'Market demand assessment',
+    'Quality-price correlation studies'
+  ]
+};
 
 const marketTypes = {
   'Farmers Market': {
@@ -145,6 +203,82 @@ const MarketPriceAnalyzer = () => {
         <Typography variant="h5" gutterBottom>
           Market Price Analyzer
         </Typography>
+
+        {/* Educational Content */}
+        <Box mt={3} mb={3}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Understanding Market Price Analysis</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography paragraph>{educationalContent.introduction}</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Key Market Factors</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.marketFactors.map((factor, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <AssessmentIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={factor.title}
+                      secondary={
+                        <>
+                          <Typography variant="body2">{factor.description}</Typography>
+                          <Typography variant="body2">Impact: {factor.impact}</Typography>
+                        </>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Pricing Strategies</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.pricingStrategies.map((strategy, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <TrendingUpIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={strategy} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Analysis Tools and Methods</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.analysisTools.map((tool, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <TimelineIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={tool} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
+
+        {/* Calculator Content */}
         <Typography variant="body2" color="textSecondary" paragraph>
           Analyze market prices and determine optimal pricing strategies for your farm products.
         </Typography>

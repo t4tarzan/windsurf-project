@@ -21,9 +21,136 @@ import {
   TableRow,
   Paper,
   Tooltip,
-  IconButton
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
-import { Info as InfoIcon } from '@mui/icons-material';
+import {
+  Info as InfoIcon,
+  WaterDrop as WaterIcon,
+  Nature as NatureIcon,
+  Warning as WarningIcon,
+  Schedule as ScheduleIcon,
+  ExpandMore as ExpandMoreIcon,
+  Thermostat as ThermostatIcon,
+  CheckCircle as CheckIcon
+} from '@mui/icons-material';
+
+const educationalContent = {
+  introduction: {
+    title: "Smart Irrigation Management",
+    content: "Effective irrigation is crucial for crop success, water conservation, and sustainable farming. This calculator helps optimize your irrigation schedule based on crop needs, soil conditions, and environmental factors."
+  },
+  waterManagement: {
+    title: "Water Management Principles",
+    points: [
+      "Understanding crop water requirements throughout growth stages",
+      "Monitoring soil moisture levels and water retention",
+      "Implementing efficient irrigation systems and techniques",
+      "Adapting to weather conditions and seasonal changes",
+      "Conserving water through proper timing and application"
+    ]
+  },
+  soilTypes: {
+    sandy: {
+      characteristics: "Fast draining, low water retention",
+      wateringStrategy: "Frequent, light irrigation",
+      challenges: "Requires more frequent watering, nutrient leaching"
+    },
+    loamy: {
+      characteristics: "Balanced drainage and retention",
+      wateringStrategy: "Moderate, regular irrigation",
+      challenges: "Maintain consistent moisture levels"
+    },
+    clay: {
+      characteristics: "Slow draining, high water retention",
+      wateringStrategy: "Less frequent, deep irrigation",
+      challenges: "Risk of waterlogging, careful monitoring needed"
+    },
+    silt: {
+      characteristics: "Good water retention, moderate drainage",
+      wateringStrategy: "Regular, measured irrigation",
+      challenges: "Surface crusting, erosion risk"
+    },
+    peat: {
+      characteristics: "High water retention, organic matter",
+      wateringStrategy: "Careful monitoring of moisture levels",
+      challenges: "Can become hydrophobic if too dry"
+    },
+    chalky: {
+      characteristics: "Free draining, low retention",
+      wateringStrategy: "Regular, moderate irrigation",
+      challenges: "Nutrient deficiencies, pH management"
+    }
+  },
+  bestPractices: [
+    {
+      title: "Timing Optimization",
+      points: [
+        "Water early morning or late evening",
+        "Avoid midday irrigation to minimize evaporation",
+        "Consider split applications for sandy soils",
+        "Adjust timing based on season and weather"
+      ]
+    },
+    {
+      title: "Water Conservation",
+      points: [
+        "Use mulch to reduce evaporation",
+        "Implement drip irrigation where possible",
+        "Monitor soil moisture with sensors",
+        "Maintain irrigation system efficiency"
+      ]
+    },
+    {
+      title: "System Maintenance",
+      points: [
+        "Regular inspection of irrigation equipment",
+        "Clean filters and nozzles",
+        "Check for leaks and damage",
+        "Calibrate water flow rates"
+      ]
+    }
+  ],
+  cropWaterNeeds: {
+    Vegetables: {
+      needs: "Moderate to high",
+      criticalStages: "Seedling establishment, flowering, fruit development",
+      tips: "Consistent moisture important for quality"
+    },
+    Fruits: {
+      needs: "High",
+      criticalStages: "Flowering, fruit set, fruit development",
+      tips: "Reduce irrigation before harvest"
+    },
+    Grains: {
+      needs: "Moderate",
+      criticalStages: "Tillering, heading, grain filling",
+      tips: "Critical irrigation timing affects yield"
+    },
+    "Root Crops": {
+      needs: "Low to moderate",
+      criticalStages: "Root development, bulking",
+      tips: "Avoid overwatering to prevent rot"
+    },
+    Legumes: {
+      needs: "Low to moderate",
+      criticalStages: "Flowering, pod development",
+      tips: "Drought tolerant after establishment"
+    },
+    Herbs: {
+      needs: "Low",
+      criticalStages: "Establishment, before harvest",
+      tips: "Many herbs prefer drier conditions"
+    }
+  }
+};
 
 const IrrigationScheduler = () => {
   const [inputs, setInputs] = useState({
@@ -170,18 +297,70 @@ const IrrigationScheduler = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Irrigation Scheduler
-        <Tooltip title="Calculate optimal irrigation schedules based on crop type, soil conditions, and weather">
-          <IconButton size="small" sx={{ ml: 1 }}>
-            <InfoIcon />
-          </IconButton>
-        </Tooltip>
+    <Box sx={{ maxWidth: 1200, margin: 'auto', padding: 3 }}>
+      <Typography variant="h4" gutterBottom align="center">
+        Smart Irrigation Management System
       </Typography>
 
-      <Card sx={{ mb: 3 }}>
+      {/* Educational Content Section */}
+      <Card sx={{ mb: 4 }}>
         <CardContent>
+          <Typography variant="h6" gutterBottom>
+            {educationalContent.introduction.title}
+          </Typography>
+          <Typography paragraph>
+            {educationalContent.introduction.content}
+          </Typography>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom color="primary">
+                Water Management Principles
+              </Typography>
+              <List>
+                {educationalContent.waterManagement.points.map((point, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <WaterIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={point} />
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom color="primary">
+                Best Practices
+              </Typography>
+              {educationalContent.bestPractices.map((practice, index) => (
+                <Box key={index} sx={{ mb: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {practice.title}
+                  </Typography>
+                  <List dense>
+                    {practice.points.map((point, idx) => (
+                      <ListItem key={idx}>
+                        <ListItemIcon>
+                          <CheckIcon color="success" fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText primary={point} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              ))}
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Calculator Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Irrigation Schedule Calculator
+          </Typography>
+
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={4}>
               <FormControl fullWidth>
@@ -193,11 +372,26 @@ const IrrigationScheduler = () => {
                   label="Crop Type"
                 >
                   {cropTypes.map(crop => (
-                    <MenuItem key={crop} value={crop}>{crop}</MenuItem>
+                    <MenuItem key={crop} value={crop}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <NatureIcon sx={{ mr: 1 }} />
+                        {crop}
+                      </Box>
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
+              {inputs.cropType && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="caption" color="textSecondary">
+                    Water needs: {educationalContent.cropWaterNeeds[inputs.cropType]?.needs}
+                    <br />
+                    Critical stages: {educationalContent.cropWaterNeeds[inputs.cropType]?.criticalStages}
+                  </Typography>
+                </Box>
+              )}
             </Grid>
+
             <Grid item xs={12} sm={6} md={4}>
               <FormControl fullWidth>
                 <InputLabel>Soil Type</InputLabel>
@@ -212,43 +406,69 @@ const IrrigationScheduler = () => {
                   ))}
                 </Select>
               </FormControl>
+              {inputs.soilType && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="caption" color="textSecondary">
+                    Strategy: {educationalContent.soilTypes[inputs.soilType.toLowerCase()]?.wateringStrategy}
+                  </Typography>
+                </Box>
+              )}
             </Grid>
+
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
-                label="Area"
+                label="Area (square meters)"
                 name="area"
+                type="number"
                 value={inputs.area}
                 onChange={handleInputChange}
                 InputProps={{
-                  endAdornment: <InputAdornment position="end">sq ft</InputAdornment>
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      m²
+                    </InputAdornment>
+                  )
                 }}
               />
             </Grid>
+
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 label="Weekly Rainfall"
                 name="rainfall"
+                type="number"
                 value={inputs.rainfall}
                 onChange={handleInputChange}
                 InputProps={{
-                  endAdornment: <InputAdornment position="end">inches</InputAdornment>
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      mm
+                    </InputAdornment>
+                  )
                 }}
               />
             </Grid>
+
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 label="Average Temperature"
                 name="temperature"
+                type="number"
                 value={inputs.temperature}
                 onChange={handleInputChange}
                 InputProps={{
-                  endAdornment: <InputAdornment position="end">°F</InputAdornment>
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      °C
+                    </InputAdornment>
+                  )
                 }}
               />
             </Grid>
+
             <Grid item xs={12} sm={6} md={4}>
               <FormControl fullWidth>
                 <InputLabel>Season</InputLabel>
@@ -259,65 +479,94 @@ const IrrigationScheduler = () => {
                   label="Season"
                 >
                   {seasons.map(season => (
-                    <MenuItem key={season} value={season}>{season}</MenuItem>
+                    <MenuItem key={season} value={season}>
+                      {season}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
-              <Button variant="contained" onClick={calculateSchedule} sx={{ mt: 2 }}>
-                Generate Schedule
-              </Button>
-            </Grid>
           </Grid>
+
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={calculateSchedule}
+              startIcon={<ScheduleIcon />}
+              size="large"
+            >
+              Generate Irrigation Schedule
+            </Button>
+          </Box>
         </CardContent>
       </Card>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mt: 2 }}>
           {error}
         </Alert>
       )}
 
       {schedule && (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Day</TableCell>
-                    <TableCell>Water Amount (gallons)</TableCell>
-                    <TableCell>Duration (minutes)</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {schedule.weeklySchedule.map((day) => (
-                    <TableRow key={day.day}>
-                      <TableCell>{day.day}</TableCell>
-                      <TableCell>{day.amount}</TableCell>
-                      <TableCell>{day.duration}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Grid>
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Weekly Summary</Typography>
-                <Typography>Total Weekly Water Requirement: {schedule.totalWeeklyWater} gallons</Typography>
-                <Typography variant="h6" sx={{ mt: 2 }}>Recommendations</Typography>
-                <ul>
+        <Card sx={{ mt: 4 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Your Irrigation Schedule
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Day</TableCell>
+                        <TableCell>Amount (gallons)</TableCell>
+                        <TableCell>Duration (minutes)</TableCell>
+                        <TableCell>Best Time</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {schedule.weeklySchedule.map((day) => (
+                        <TableRow key={day.day}>
+                          <TableCell>{day.day}</TableCell>
+                          <TableCell>{day.amount}</TableCell>
+                          <TableCell>{day.duration}</TableCell>
+                          <TableCell>Early morning or late evening</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Total Weekly Water Requirement: {schedule.totalWeeklyWater} gallons
+                  </Typography>
+                </Alert>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography variant="h6" gutterBottom color="primary" sx={{ mt: 2 }}>
+                  Recommendations
+                </Typography>
+                <List>
                   {schedule.recommendations.map((rec, index) => (
-                    <li key={index}><Typography>{rec}</Typography></li>
+                    <ListItem key={index}>
+                      <ListItemIcon>
+                        <CheckIcon color="success" />
+                      </ListItemIcon>
+                      <ListItemText primary={rec} />
+                    </ListItem>
                   ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+                </List>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
       )}
     </Box>
   );

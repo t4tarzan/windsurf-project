@@ -81,6 +81,51 @@ const fertilizerDatabase = {
   ],
 };
 
+const educationalContent = {
+  introduction: {
+    title: "Understanding Soil Nutrients and Plant Health",
+    content: `Proper nutrient management is fundamental to successful farming and gardening. The three primary macronutrients - Nitrogen (N), Phosphorus (P), and Potassium (K) - play crucial roles in plant growth and development. This calculator helps you optimize your soil's nutrient levels for maximum crop yield and sustainability.`,
+  },
+  nutrients: {
+    nitrogen: {
+      title: "Nitrogen (N)",
+      role: "Essential for leaf and stem growth, chlorophyll production, and protein synthesis",
+      deficiency: "Yellowing of older leaves (chlorosis), stunted growth, reduced yield",
+      excess: "Excessive vegetative growth, delayed flowering, increased susceptibility to diseases",
+      sources: "Compost, manure, blood meal, urea, ammonium nitrate",
+    },
+    phosphorus: {
+      title: "Phosphorus (P)",
+      role: "Critical for root development, flowering, fruiting, and energy transfer",
+      deficiency: "Purple-tinted leaves, stunted root systems, delayed maturity",
+      excess: "Can interfere with micronutrient absorption, particularly zinc and iron",
+      sources: "Rock phosphate, bone meal, superphosphate, fish meal",
+    },
+    potassium: {
+      title: "Potassium (K)",
+      role: "Regulates water usage, disease resistance, and overall plant strength",
+      deficiency: "Scorched leaf edges, weak stems, poor fruit quality",
+      excess: "Can cause salt stress and interfere with calcium and magnesium uptake",
+      sources: "Wood ash, kelp meal, potassium sulfate, greensand",
+    },
+  },
+  bestPractices: [
+    "Regular soil testing (at least annually)",
+    "Apply nutrients based on crop requirements and soil test results",
+    "Consider using cover crops to improve soil nutrient content naturally",
+    "Rotate crops to optimize nutrient usage",
+    "Time applications according to crop growth stages",
+    "Monitor plant health for signs of deficiency or excess",
+  ],
+  sustainablePractices: [
+    "Use organic nutrient sources when possible",
+    "Implement precision application methods",
+    "Practice nutrient cycling through crop residue management",
+    "Consider slow-release fertilizers to reduce leaching",
+    "Maintain soil organic matter for better nutrient retention",
+  ],
+};
+
 const NutrientCalculator = () => {
   const [inputs, setInputs] = useState({
     cropType: '',
@@ -103,7 +148,7 @@ const NutrientCalculator = () => {
     setError('');
   };
 
-  const calculateNutrients = () => {
+  const calculateRecommendations = () => {
     const { cropType, area, soilTestN, soilTestP, soilTestK } = inputs;
     
     if (!cropType || !area || !soilTestN || !soilTestP || !soilTestK) {
@@ -164,193 +209,225 @@ const NutrientCalculator = () => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, maxWidth: 1000, mx: 'auto' }}>
-      <Typography variant="h5" gutterBottom>
-        Nutrient Calculator
-        <Tooltip title="Calculate nutrient requirements and fertilizer recommendations">
-          <IconButton size="small" sx={{ ml: 1 }}>
-            <InfoIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+    <Box sx={{ maxWidth: 1200, margin: 'auto', padding: 3 }}>
+      <Typography variant="h4" gutterBottom align="center">
+        Soil Nutrient Management Calculator
       </Typography>
+      
+      {/* Educational Content Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            {educationalContent.introduction.title}
+          </Typography>
+          <Typography paragraph>
+            {educationalContent.introduction.content}
+          </Typography>
+          
+          {/* Nutrient Information Tabs */}
+          <Grid container spacing={3} sx={{ mt: 2 }}>
+            {Object.entries(educationalContent.nutrients).map(([nutrient, info]) => (
+              <Grid item xs={12} md={4} key={nutrient}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom color="primary">
+                      {info.title}
+                    </Typography>
+                    <Typography variant="subtitle2" gutterBottom>Role:</Typography>
+                    <Typography paragraph variant="body2">{info.role}</Typography>
+                    <Typography variant="subtitle2" gutterBottom>Deficiency Signs:</Typography>
+                    <Typography paragraph variant="body2">{info.deficiency}</Typography>
+                    <Typography variant="subtitle2" gutterBottom>Common Sources:</Typography>
+                    <Typography variant="body2">{info.sources}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </CardContent>
+      </Card>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Crop Type</InputLabel>
-            <Select
-              name="cropType"
-              value={inputs.cropType}
-              onChange={handleInputChange}
-              label="Crop Type"
-            >
-              <MenuItem value="tomatoes">Tomatoes</MenuItem>
-              <MenuItem value="lettuce">Lettuce</MenuItem>
-              <MenuItem value="corn">Corn</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Area (m²)"
-            name="area"
-            type="number"
-            value={inputs.area}
-            onChange={handleInputChange}
-            inputProps={{ min: 0, step: "0.1" }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="Soil Test N (ppm)"
-            name="soilTestN"
-            type="number"
-            value={inputs.soilTestN}
-            onChange={handleInputChange}
-            inputProps={{ min: 0, step: "1" }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="Soil Test P (ppm)"
-            name="soilTestP"
-            type="number"
-            value={inputs.soilTestP}
-            onChange={handleInputChange}
-            inputProps={{ min: 0, step: "1" }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="Soil Test K (ppm)"
-            name="soilTestK"
-            type="number"
-            value={inputs.soilTestK}
-            onChange={handleInputChange}
-            inputProps={{ min: 0, step: "1" }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Fertilizer Preference</InputLabel>
-            <Select
-              name="organicPreference"
-              value={inputs.organicPreference}
-              onChange={handleInputChange}
-              label="Fertilizer Preference"
-            >
-              <MenuItem value="both">Both Organic and Conventional</MenuItem>
-              <MenuItem value="organic">Organic Only</MenuItem>
-              <MenuItem value="conventional">Conventional Only</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
+      {/* Calculator Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Calculate Your Nutrient Requirements
+          </Typography>
+          
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Crop Type</InputLabel>
+                <Select
+                  name="cropType"
+                  value={inputs.cropType}
+                  onChange={handleInputChange}
+                  label="Crop Type"
+                >
+                  {Object.keys(nutrientDatabase).map(crop => (
+                    <MenuItem key={crop} value={crop}>
+                      {crop.charAt(0).toUpperCase() + crop.slice(1)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Area (square meters)"
+                name="area"
+                type="number"
+                value={inputs.area}
+                onChange={handleInputChange}
+                InputProps={{
+                  endAdornment: (
+                    <Tooltip title="Enter the total area you plan to fertilize">
+                      <IconButton size="small">
+                        <InfoIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ),
+                }}
+              />
+            </Grid>
 
-      <Box sx={{ mt: 3 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={calculateNutrients}
-          fullWidth
-          startIcon={<ScienceIcon />}
-        >
-          Calculate Nutrient Needs
-        </Button>
-      </Box>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Soil Test N (ppm)"
+                name="soilTestN"
+                type="number"
+                value={inputs.soilTestN}
+                onChange={handleInputChange}
+                helperText="Current nitrogen level from soil test"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Soil Test P (ppm)"
+                name="soilTestP"
+                type="number"
+                value={inputs.soilTestP}
+                onChange={handleInputChange}
+                helperText="Current phosphorus level from soil test"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Soil Test K (ppm)"
+                name="soilTestK"
+                type="number"
+                value={inputs.soilTestK}
+                onChange={handleInputChange}
+                helperText="Current potassium level from soil test"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel>Fertilizer Preference</InputLabel>
+                <Select
+                  name="organicPreference"
+                  value={inputs.organicPreference}
+                  onChange={handleInputChange}
+                  label="Fertilizer Preference"
+                >
+                  <MenuItem value="organic">Organic Only</MenuItem>
+                  <MenuItem value="conventional">Conventional Only</MenuItem>
+                  <MenuItem value="both">Both</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={calculateRecommendations}
+              startIcon={<ScienceIcon />}
+            >
+              Calculate Recommendations
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Best Practices Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Best Practices for Nutrient Management
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle1" gutterBottom>
+                General Guidelines:
+              </Typography>
+              <ul>
+                {educationalContent.bestPractices.map((practice, index) => (
+                  <li key={index}>
+                    <Typography variant="body2">{practice}</Typography>
+                  </li>
+                ))}
+              </ul>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle1" gutterBottom>
+                Sustainable Practices:
+              </Typography>
+              <ul>
+                {educationalContent.sustainablePractices.map((practice, index) => (
+                  <li key={index}>
+                    <Typography variant="body2">{practice}</Typography>
+                  </li>
+                ))}
+              </ul>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
 
       {error && (
-        <Box mt={2}>
-          <Alert severity="error">{error}</Alert>
-        </Box>
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
       )}
 
       {recommendations && (
-        <Box mt={3}>
-          <Typography variant="h6" gutterBottom>
-            Nutrient Recommendations
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" color="primary" gutterBottom>
-                    Nutrient Status
-                  </Typography>
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Nutrient</TableCell>
-                          <TableCell>Status</TableCell>
-                          <TableCell>Required Amount (lbs/1000 sq ft)</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {Object.entries(recommendations.needs).map(([nutrient, info]) => (
-                          <TableRow key={nutrient}>
-                            <TableCell>{nutrient}</TableCell>
-                            <TableCell>{info.status}</TableCell>
-                            <TableCell>{info.amount.toFixed(2)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" color="primary" gutterBottom>
-                    Crop Requirements
-                  </Typography>
-                  <TableContainer>
-                    <Table>
-                      <TableBody>
-                        {Object.entries(recommendations.requirements).map(([nutrient, requirement]) => (
-                          <TableRow key={nutrient}>
-                            <TableCell component="th" scope="row">
-                              {nutrient.charAt(0).toUpperCase() + nutrient.slice(1)}
-                            </TableCell>
-                            <TableCell>{requirement}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </CardContent>
-              </Card>
-            </Grid>
-            {Object.entries(recommendations.fertilizers).map(([nutrient, options]) => (
-              <Grid item xs={12} key={nutrient}>
+        <Card sx={{ mt: 4 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Nutrient Recommendations
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6" color="primary" gutterBottom>
-                      {nutrient.charAt(0).toUpperCase() + nutrient.slice(1)} Sources
+                      Nutrient Status
                     </Typography>
                     <TableContainer>
                       <Table>
                         <TableHead>
                           <TableRow>
-                            <TableCell>Fertilizer</TableCell>
-                            <TableCell>N-P-K</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell>Amount Needed (lbs)</TableCell>
+                            <TableCell>Nutrient</TableCell>
+                            <TableCell>Status</TableCell>
+                            <TableCell>Required Amount (lbs/1000 sq ft)</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {options.map((fertilizer, index) => (
-                            <TableRow key={index}>
-                              <TableCell>{fertilizer.name}</TableCell>
-                              <TableCell>{fertilizer.npk}</TableCell>
-                              <TableCell>{fertilizer.organic ? 'Organic' : 'Conventional'}</TableCell>
-                              <TableCell>{fertilizer.amount}</TableCell>
+                          {Object.entries(recommendations.needs).map(([nutrient, info]) => (
+                            <TableRow key={nutrient}>
+                              <TableCell>{nutrient}</TableCell>
+                              <TableCell>{info.status}</TableCell>
+                              <TableCell>{info.amount.toFixed(2)}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -359,11 +436,67 @@ const NutrientCalculator = () => {
                   </CardContent>
                 </Card>
               </Grid>
-            ))}
-          </Grid>
-        </Box>
+              <Grid item xs={12}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" color="primary" gutterBottom>
+                      Crop Requirements
+                    </Typography>
+                    <TableContainer>
+                      <Table>
+                        <TableBody>
+                          {Object.entries(recommendations.requirements).map(([nutrient, requirement]) => (
+                            <TableRow key={nutrient}>
+                              <TableCell component="th" scope="row">
+                                {nutrient.charAt(0).toUpperCase() + nutrient.slice(1)}
+                              </TableCell>
+                              <TableCell>{requirement}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+              {Object.entries(recommendations.fertilizers).map(([nutrient, options]) => (
+                <Grid item xs={12} key={nutrient}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" color="primary" gutterBottom>
+                        {nutrient.charAt(0).toUpperCase() + nutrient.slice(1)} Sources
+                      </Typography>
+                      <TableContainer>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Fertilizer</TableCell>
+                              <TableCell>N-P-K</TableCell>
+                              <TableCell>Type</TableCell>
+                              <TableCell>Amount Needed (lbs)</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {options.map((fertilizer, index) => (
+                              <TableRow key={index}>
+                                <TableCell>{fertilizer.name}</TableCell>
+                                <TableCell>{fertilizer.npk}</TableCell>
+                                <TableCell>{fertilizer.organic ? 'Organic' : 'Conventional'}</TableCell>
+                                <TableCell>{fertilizer.amount}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
       )}
-    </Paper>
+    </Box>
   );
 };
 

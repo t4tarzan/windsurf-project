@@ -19,12 +19,19 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon
+  ListItemIcon,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
 import {
   Info as InfoIcon,
   WaterDrop as WaterIcon,
-  Calculate as CalculateIcon
+  Calculate as CalculateIcon,
+  ExpandMore as ExpandMoreIcon,
+  Nature as NatureIcon,
+  Engineering as EngineeringIcon,
+  Architecture as ArchitectureIcon
 } from '@mui/icons-material';
 
 const RainWaterHarvesting = () => {
@@ -111,17 +118,155 @@ const RainWaterHarvesting = () => {
     }
   };
 
+  // Educational content for SEO and user guidance
+  const educationalContent = {
+    introduction: `Rainwater harvesting is the collection and storage of rain from roofs or other surfaces for future use. It is an ancient practice that has been modernized to help address water scarcity and promote sustainable water management.`,
+    
+    benefits: [
+      {
+        title: 'Water Conservation',
+        description: 'Reduces dependence on municipal water supply and groundwater',
+        impact: 'Lower water bills and reduced environmental impact'
+      },
+      {
+        title: 'Flood Control',
+        description: 'Reduces stormwater runoff and local flooding risks',
+        impact: 'Improved community resilience and infrastructure protection'
+      },
+      {
+        title: 'Sustainable Agriculture',
+        description: 'Provides reliable water source for irrigation',
+        impact: 'Enhanced crop yields and reduced water stress'
+      },
+      {
+        title: 'Environmental Protection',
+        description: 'Reduces erosion and water pollution',
+        impact: 'Improved water quality and ecosystem health'
+      }
+    ],
+
+    systemComponents: [
+      {
+        component: 'Catchment Area',
+        description: 'Usually the roof surface where rainfall is collected',
+        considerations: 'Material type affects collection efficiency'
+      },
+      {
+        component: 'Gutters and Downspouts',
+        description: 'Channel water from the catchment area to storage',
+        considerations: 'Proper sizing and maintenance is crucial'
+      },
+      {
+        component: 'First Flush Diverter',
+        description: 'Removes initial rainfall containing debris',
+        considerations: 'Improves water quality and system longevity'
+      },
+      {
+        component: 'Storage Tank',
+        description: 'Holds collected rainwater for future use',
+        considerations: 'Size based on rainfall patterns and water needs'
+      }
+    ],
+
+    bestPractices: [
+      'Regular system maintenance and cleaning',
+      'Install debris screens and first-flush diverters',
+      'Ensure proper overflow mechanisms',
+      'Consider local rainfall patterns when sizing system',
+      'Implement water quality treatment if needed',
+      'Follow local building codes and regulations'
+    ]
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Rain Water Harvesting Calculator
-        <Tooltip title="Calculate potential rainwater collection based on roof area and rainfall">
-          <IconButton size="small" sx={{ ml: 1 }}>
-            <InfoIcon />
-          </IconButton>
-        </Tooltip>
+    <Paper elevation={3} sx={{ p: 3, maxWidth: 800, mx: 'auto', my: 3 }}>
+      <Typography variant="h4" gutterBottom align="center">
+        Rainwater Harvesting Calculator
       </Typography>
 
+      {/* Educational Content Section */}
+      <Box mb={4}>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <InfoIcon sx={{ mr: 1 }} /> About Rainwater Harvesting
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <NatureIcon sx={{ mr: 1 }} /> Benefits
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {educationalContent.benefits.map((benefit, index) => (
+                <Grid item xs={12} sm={6} key={index}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{benefit.title}</Typography>
+                      <Typography paragraph>{benefit.description}</Typography>
+                      <Typography variant="body2" color="textSecondary">{benefit.impact}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <EngineeringIcon sx={{ mr: 1 }} /> System Components
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {educationalContent.systemComponents.map((item, index) => (
+                <Grid item xs={12} sm={6} key={index}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{item.component}</Typography>
+                      <Typography paragraph>{item.description}</Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Note: {item.considerations}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <ArchitectureIcon sx={{ mr: 1 }} /> Best Practices
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.bestPractices.map((practice, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <NatureIcon color="success" />
+                  </ListItemIcon>
+                  <ListItemText primary={practice} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+
+      {/* Calculator Section */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={3}>
@@ -210,91 +355,60 @@ const RainWaterHarvesting = () => {
       </Card>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mt: 2 }}>
           {error}
         </Alert>
       )}
 
       {results && (
-        <Card>
+        <Card sx={{ mt: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>Results</Typography>
-            <Divider sx={{ mb: 2 }} />
-            
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <List>
-                  <ListItem>
-                    <ListItemIcon>
-                      <WaterIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`Annual Harvest: ${results.annualHarvest} ${results.displayUnit}`}
-                      secondary="Total water collection potential per year"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <WaterIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`Monthly Average: ${results.monthlyAverage} ${results.displayUnit}`}
-                      secondary="Average monthly collection potential"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <WaterIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`Daily Average: ${results.dailyAverage} ${results.displayUnit}`}
-                      secondary="Average daily collection potential"
-                    />
-                  </ListItem>
-                </List>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  Annual Potential Harvest: {results.annualHarvest} {results.displayUnit}
+                </Typography>
               </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <List>
-                  <ListItem>
-                    <ListItemIcon>
-                      <WaterIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`Recommended Storage: ${results.recommendedStorage} ${results.displayUnit}`}
-                      secondary="Suggested storage capacity (1.5 months of average rainfall)"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <WaterIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`Storage Efficiency: ${results.storageEfficiency}%`}
-                      secondary="Current storage capacity vs. recommended"
-                    />
-                  </ListItem>
-                </List>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  Monthly Average: {results.monthlyAverage} {results.displayUnit}
+                </Typography>
               </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  Daily Average: {results.dailyAverage} {results.displayUnit}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  Recommended Storage: {results.recommendedStorage} {results.displayUnit}
+                </Typography>
+              </Grid>
+              {inputs.storageCapacity && (
+                <Grid item xs={12}>
+                  <Typography>
+                    Storage Efficiency: {results.storageEfficiency}%
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
 
-            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-              Recommendations
-            </Typography>
+            <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>Recommendations</Typography>
             <List>
-              {results.recommendations.map((rec, index) => (
+              {results.recommendations.map((recommendation, index) => (
                 <ListItem key={index}>
                   <ListItemIcon>
-                    <InfoIcon color="info" />
+                    <WaterIcon color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary={rec} />
+                  <ListItemText primary={recommendation} />
                 </ListItem>
               ))}
             </List>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </Paper>
   );
 };
 

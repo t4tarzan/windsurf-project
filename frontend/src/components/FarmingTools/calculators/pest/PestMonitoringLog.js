@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -10,22 +10,16 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   Box,
-  Chip,
   Rating,
   Alert,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -34,11 +28,67 @@ import {
   BugReport as PestIcon,
   CalendarMonth as DateIcon,
   LocationOn as LocationIcon,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { format } from 'date-fns';
+import MonitoringDataCard from '../../components/pest/MonitoringDataCard';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `Regular pest monitoring is crucial for effective pest management in agriculture. This monitoring log helps farmers track pest populations, damage levels, and treatment effectiveness over time, enabling data-driven pest management decisions.`,
+  
+  monitoringBenefits: [
+    {
+      benefit: 'Early Detection',
+      description: 'Identify pest problems before they become severe, allowing for timely intervention.'
+    },
+    {
+      benefit: 'Treatment Evaluation',
+      description: 'Track the effectiveness of pest control measures and adjust strategies as needed.'
+    },
+    {
+      benefit: 'Historical Records',
+      description: 'Build a database of pest patterns to predict and prevent future outbreaks.'
+    },
+    {
+      benefit: 'Economic Savings',
+      description: 'Optimize treatment timing and reduce unnecessary pesticide applications.'
+    }
+  ],
+  
+  bestPractices: [
+    {
+      practice: 'Regular Scouting',
+      tips: [
+        'Check crops at least weekly during growing season',
+        'Inspect both upper and lower leaf surfaces',
+        'Monitor for natural enemies as well as pests',
+        'Use consistent sampling patterns'
+      ]
+    },
+    {
+      practice: 'Record Keeping',
+      tips: [
+        'Note weather conditions during observations',
+        'Document pest numbers and damage levels',
+        'Track treatment dates and results',
+        'Include photos when possible'
+      ]
+    },
+    {
+      practice: 'Data Analysis',
+      tips: [
+        'Review records regularly to identify patterns',
+        'Compare data across seasons',
+        'Share information with pest management advisors',
+        'Use data to refine treatment thresholds'
+      ]
+    }
+  ]
+};
 
 // Severity levels for pest infestations
 const severityLevels = [
@@ -52,232 +102,208 @@ const commonPests = [
   'Aphids',
   'Spider Mites',
   'Whiteflies',
+  'Thrips',
   'Caterpillars',
   'Beetles',
-  'Thrips',
   'Scale Insects',
-  'Mealybugs',
-  'Other',
-];
-
-// Location areas for monitoring
-const locationAreas = [
-  'Field A',
-  'Field B',
-  'Greenhouse 1',
-  'Greenhouse 2',
-  'Orchard',
-  'Garden Beds',
-  'Other',
+  'Mealybugs'
 ];
 
 const PestMonitoringLog = () => {
-  const [logs, setLogs] = useState(() => {
-    const savedLogs = localStorage.getItem('pestMonitoringLogs');
-    return savedLogs ? JSON.parse(savedLogs) : [];
-  });
-  const [open, setOpen] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
-  const [formData, setFormData] = useState({
+  const [currentLog, setCurrentLog] = useState({
     date: new Date(),
     location: '',
     pestType: '',
     severity: 1,
-    affectedCrops: '',
-    symptoms: '',
-    controlMeasures: '',
     notes: '',
+    treatments: [],
+    recommendations: ''
   });
 
-  // Save logs to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('pestMonitoringLogs', JSON.stringify(logs));
-  }, [logs]);
-
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleInputChange = (field) => (event) => {
+    setCurrentLog({
+      ...currentLog,
+      [field]: event.target.value
+    });
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setEditingLog(null);
-    setFormData({
+  const handleDateChange = (date) => {
+    setCurrentLog({
+      ...currentLog,
+      date
+    });
+  };
+
+  const handleAddLog = () => {
+    if (editingLog !== null) {
+      setLogs(logs.map((log, index) => 
+        index === editingLog ? { ...currentLog } : log
+      ));
+      setEditingLog(null);
+    } else {
+      setLogs([...logs, { ...currentLog }]);
+    }
+    setOpenDialog(false);
+    setCurrentLog({
       date: new Date(),
       location: '',
       pestType: '',
       severity: 1,
-      affectedCrops: '',
-      symptoms: '',
-      controlMeasures: '',
       notes: '',
+      treatments: [],
+      recommendations: ''
     });
   };
 
-  const handleEdit = (log) => {
-    setEditingLog(log);
-    setFormData({
-      ...log,
-      date: new Date(log.date),
-    });
-    setOpen(true);
+  const handleEditLog = (index) => {
+    setEditingLog(index);
+    setCurrentLog(logs[index]);
+    setOpenDialog(true);
   };
 
-  const handleDelete = (index) => {
-    const newLogs = logs.filter((_, i) => i !== index);
-    setLogs(newLogs);
-  };
-
-  const handleSubmit = () => {
-    if (editingLog) {
-      const updatedLogs = logs.map((log) =>
-        log === editingLog ? { ...formData, date: formData.date.toISOString() } : log
-      );
-      setLogs(updatedLogs);
-    } else {
-      setLogs([...logs, { ...formData, date: formData.date.toISOString() }]);
-    }
-    handleClose();
-  };
-
-  const handleChange = (field) => (event) => {
-    setFormData({
-      ...formData,
-      [field]: event.target.value,
-    });
-  };
-
-  const getSeverityChip = (severity) => {
-    const level = severityLevels.find((l) => l.value === severity);
-    return (
-      <Chip
-        label={level.label}
-        color={level.color}
-        size="small"
-        sx={{ minWidth: 80 }}
-      />
-    );
+  const handleDeleteLog = (index) => {
+    setLogs(logs.filter((_, i) => i !== index));
   };
 
   return (
     <Card>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" component="div">
-            Pest Monitoring Log
-          </Typography>
+        <Typography variant="h5" gutterBottom>
+          Pest Monitoring Log
+        </Typography>
+
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">About Pest Monitoring</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+            <Grid container spacing={2}>
+              {educationalContent.monitoringBenefits.map((benefit) => (
+                <Grid item xs={12} md={3} key={benefit.benefit}>
+                  <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      {benefit.benefit}
+                    </Typography>
+                    <Typography variant="body2">
+                      {benefit.description}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>Best Practices</Typography>
+              <Grid container spacing={2}>
+                {educationalContent.bestPractices.map((practice) => (
+                  <Grid item xs={12} md={4} key={practice.practice}>
+                    <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        {practice.practice}
+                      </Typography>
+                      <ul>
+                        {practice.tips.map((tip, index) => (
+                          <li key={index}>
+                            <Typography variant="body2">{tip}</Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+
+        <Box sx={{ mt: 3, mb: 2 }}>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={handleClickOpen}
+            onClick={() => {
+              setEditingLog(null);
+              setCurrentLog({
+                date: new Date(),
+                location: '',
+                pestType: '',
+                severity: 1,
+                notes: '',
+                treatments: [],
+                recommendations: ''
+              });
+              setOpenDialog(true);
+            }}
           >
-            Add New Entry
+            Add Monitoring Log
           </Button>
         </Box>
 
         {logs.length === 0 ? (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            No monitoring logs yet. Click "Add New Entry" to start tracking pest observations.
+          <Alert severity="info" sx={{ mt: 2 }}>
+            No monitoring logs recorded yet. Click the button above to add your first log.
           </Alert>
         ) : (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Location</TableCell>
-                  <TableCell>Pest Type</TableCell>
-                  <TableCell>Severity</TableCell>
-                  <TableCell>Affected Crops</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {logs.map((log, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <DateIcon sx={{ mr: 1, color: 'primary.main' }} />
-                        {format(new Date(log.date), 'MMM d, yyyy')}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <LocationIcon sx={{ mr: 1, color: 'primary.main' }} />
-                        {log.location}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <PestIcon sx={{ mr: 1, color: 'primary.main' }} />
-                        {log.pestType}
-                      </Box>
-                    </TableCell>
-                    <TableCell>{getSeverityChip(log.severity)}</TableCell>
-                    <TableCell>{log.affectedCrops}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(log)}
-                        sx={{ mr: 1 }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(index)}
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <Box sx={{ mt: 2 }}>
+            {logs.map((log, index) => (
+              <Box key={index} sx={{ position: 'relative', mb: 2 }}>
+                <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}>
+                  <Button
+                    size="small"
+                    startIcon={<EditIcon />}
+                    onClick={() => handleEditLog(index)}
+                    sx={{ mr: 1 }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={() => handleDeleteLog(index)}
+                  >
+                    Delete
+                  </Button>
+                </Box>
+                <MonitoringDataCard data={log} />
+              </Box>
+            ))}
+          </Box>
         )}
 
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
           <DialogTitle>
-            {editingLog ? 'Edit Monitoring Log' : 'New Monitoring Log'}
+            {editingLog !== null ? 'Edit Monitoring Log' : 'Add New Monitoring Log'}
           </DialogTitle>
           <DialogContent>
-            <Grid container spacing={3} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} md={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    label="Observation Date"
-                    value={formData.date}
-                    onChange={(newDate) =>
-                      setFormData({ ...formData, date: newDate })
-                    }
+                    label="Date"
+                    value={currentLog.date}
+                    onChange={handleDateChange}
                     renderInput={(params) => <TextField {...params} fullWidth />}
                   />
                 </LocalizationProvider>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Location</InputLabel>
-                  <Select
-                    value={formData.location}
-                    label="Location"
-                    onChange={handleChange('location')}
-                  >
-                    {locationAreas.map((area) => (
-                      <MenuItem key={area} value={area}>
-                        {area}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Location"
+                  value={currentLog.location}
+                  onChange={handleInputChange('location')}
+                />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} md={6}>
                 <FormControl fullWidth>
                   <InputLabel>Pest Type</InputLabel>
                   <Select
-                    value={formData.pestType}
+                    value={currentLog.pestType}
+                    onChange={handleInputChange('pestType')}
                     label="Pest Type"
-                    onChange={handleChange('pestType')}
                   >
                     {commonPests.map((pest) => (
                       <MenuItem key={pest} value={pest}>
@@ -287,26 +313,17 @@ const PestMonitoringLog = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} md={6}>
                 <FormControl fullWidth>
                   <InputLabel>Severity</InputLabel>
                   <Select
-                    value={formData.severity}
+                    value={currentLog.severity}
+                    onChange={handleInputChange('severity')}
                     label="Severity"
-                    onChange={handleChange('severity')}
                   >
                     {severityLevels.map((level) => (
                       <MenuItem key={level.value} value={level.value}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          {level.label}
-                          <Rating
-                            value={level.value}
-                            max={3}
-                            readOnly
-                            size="small"
-                            sx={{ ml: 1 }}
-                          />
-                        </Box>
+                        {level.label}
                       </MenuItem>
                     ))}
                   </Select>
@@ -315,53 +332,43 @@ const PestMonitoringLog = () => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Affected Crops"
-                  value={formData.affectedCrops}
-                  onChange={handleChange('affectedCrops')}
-                  placeholder="List affected crops (comma separated)"
+                  multiline
+                  rows={3}
+                  label="Observations"
+                  value={currentLog.notes}
+                  onChange={handleInputChange('notes')}
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Symptoms"
-                  value={formData.symptoms}
-                  onChange={handleChange('symptoms')}
-                  multiline
-                  rows={2}
-                  placeholder="Describe observed symptoms"
+                  label="Applied Treatments"
+                  value={currentLog.treatments.join(', ')}
+                  onChange={(e) => setCurrentLog({
+                    ...currentLog,
+                    treatments: e.target.value.split(',').map(t => t.trim()).filter(t => t)
+                  })}
+                  helperText="Enter treatments separated by commas"
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Control Measures"
-                  value={formData.controlMeasures}
-                  onChange={handleChange('controlMeasures')}
                   multiline
                   rows={2}
-                  placeholder="List applied or planned control measures"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Additional Notes"
-                  value={formData.notes}
-                  onChange={handleChange('notes')}
-                  multiline
-                  rows={2}
-                  placeholder="Any additional observations or notes"
+                  label="Recommendations"
+                  value={currentLog.recommendations}
+                  onChange={handleInputChange('recommendations')}
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
             <Button
-              onClick={handleSubmit}
               variant="contained"
-              disabled={!formData.location || !formData.pestType}
+              onClick={handleAddLog}
+              disabled={!currentLog.location || !currentLog.pestType}
             >
               {editingLog ? 'Update' : 'Save'}
             </Button>

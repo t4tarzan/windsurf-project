@@ -13,8 +13,94 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Alert
+  Alert,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import {
+  Grass as GrassIcon,
+  Info as InfoIcon,
+  Timer as TimerIcon,
+  CalendarToday as CalendarIcon,
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `Rotational grazing is a management-intensive system that divides pastures into smaller paddocks, allowing livestock to graze one area while other areas rest and regrow. This approach optimizes forage production, improves pasture health, and enhances livestock performance.`,
+  
+  benefits: [
+    {
+      title: 'Improved Pasture Health',
+      points: [
+        'Better root development and plant recovery',
+        'Increased organic matter in soil',
+        'Enhanced drought resistance',
+        'Reduced soil erosion'
+      ]
+    },
+    {
+      title: 'Enhanced Animal Performance',
+      points: [
+        'Access to higher quality forage',
+        'More uniform grazing distribution',
+        'Better weight gain',
+        'Improved herd health'
+      ]
+    },
+    {
+      title: 'Economic Benefits',
+      points: [
+        'Increased stocking rates',
+        'Reduced feed costs',
+        'Better pasture utilization',
+        'Extended grazing season'
+      ]
+    }
+  ],
+
+  bestPractices: [
+    {
+      practice: 'Paddock Design',
+      tips: [
+        'Consider water access for each paddock',
+        'Account for natural barriers and terrain',
+        'Plan for easy animal movement',
+        'Size paddocks based on herd needs'
+      ]
+    },
+    {
+      practice: 'Timing Management',
+      tips: [
+        'Monitor grass height before and after grazing',
+        'Adjust rotation based on growth rates',
+        'Consider seasonal variations',
+        'Allow adequate rest periods'
+      ]
+    },
+    {
+      practice: 'Monitoring',
+      tips: [
+        'Keep detailed grazing records',
+        'Track pasture recovery rates',
+        'Observe animal behavior',
+        'Assess forage quality'
+      ]
+    }
+  ],
+
+  seasonalConsiderations: {
+    Spring: 'Faster growth rates, shorter rotations needed',
+    Summer: 'Moderate growth, standard rotation lengths',
+    Fall: 'Slowing growth, longer rotations required',
+    Winter: 'Minimal growth, consider supplemental feeding'
+  }
+};
 
 // Recovery periods (days) for different pasture types
 const pastureTypes = {
@@ -100,11 +186,103 @@ const GrazingRotationPlanner = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
       <Typography variant="h5" gutterBottom>
         Grazing Rotation Planner
+        <Tooltip title="Plan your rotational grazing system">
+          <IconButton size="small" sx={{ ml: 1 }}>
+            <InfoIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Typography>
-      
+
+      <Box sx={{ mb: 4 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              About Rotational Grazing
+            </Typography>
+            <Typography paragraph>
+              {educationalContent.introduction}
+            </Typography>
+
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              Benefits of Rotational Grazing
+            </Typography>
+            <Grid container spacing={3}>
+              {educationalContent.benefits.map((benefit) => (
+                <Grid item xs={12} md={4} key={benefit.title}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="subtitle1" color="primary" gutterBottom>
+                        {benefit.title}
+                      </Typography>
+                      <List dense>
+                        {benefit.points.map((point, index) => (
+                          <ListItem key={index}>
+                            <ListItemText primary={point} />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              Best Management Practices
+            </Typography>
+            <Grid container spacing={3}>
+              {educationalContent.bestPractices.map((item) => (
+                <Grid item xs={12} md={4} key={item.practice}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="subtitle1" color="primary" gutterBottom>
+                        {item.practice}
+                      </Typography>
+                      <List dense>
+                        {item.tips.map((tip, index) => (
+                          <ListItem key={index}>
+                            <ListItemText primary={tip} />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              Seasonal Considerations
+            </Typography>
+            <Grid container spacing={2}>
+              {Object.entries(educationalContent.seasonalConsiderations).map(([season, info]) => (
+                <Grid item xs={12} sm={6} md={3} key={season}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="subtitle1" color="primary" gutterBottom>
+                        {season}
+                      </Typography>
+                      <Typography variant="body2">
+                        {info}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
+      <Typography variant="h6" gutterBottom>
+        Calculate Grazing Rotation
+      </Typography>
+
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>

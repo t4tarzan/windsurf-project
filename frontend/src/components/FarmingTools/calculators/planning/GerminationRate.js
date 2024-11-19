@@ -15,7 +15,21 @@ import {
   TableRow,
   Paper,
   Alert,
+  Box,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
+import {
+  ExpandMore as ExpandMoreIcon,
+  Science as ScienceIcon,
+  Psychology as PsychologyIcon,
+  Lightbulb as LightbulbIcon,
+} from '@mui/icons-material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { addDays, differenceInDays } from 'date-fns';
@@ -56,6 +70,44 @@ const commonCrops = {
     viabilityYears: '2-3',
     notes: 'Cooler temperatures preferred'
   }
+};
+
+const educationalContent = {
+  introduction: `Germination rate is a crucial metric in agriculture that measures the percentage of seeds that successfully sprout under specific conditions. Understanding and tracking germination rates helps farmers and gardeners optimize their planting strategies and improve crop yields.`,
+  
+  importance: [
+    {
+      title: 'Seed Quality Assessment',
+      description: 'Evaluate the viability and health of seed batches',
+      impact: 'Ensures investment in quality seeds'
+    },
+    {
+      title: 'Planting Density Planning',
+      description: 'Determine optimal seed spacing and quantity',
+      impact: 'Optimizes resource utilization'
+    },
+    {
+      title: 'Crop Success Prediction',
+      description: 'Forecast potential crop establishment rates',
+      impact: 'Improves planning and risk management'
+    }
+  ],
+
+  bestPractices: [
+    'Maintain consistent moisture levels during germination testing',
+    'Control temperature within optimal range for specific crop types',
+    'Use clean, sterile containers and growing medium',
+    'Document testing conditions and results systematically',
+    'Consider conducting multiple tests for accuracy'
+  ],
+
+  factors: [
+    'Seed age and storage conditions',
+    'Temperature and moisture levels',
+    'Soil or growing medium quality',
+    'Light exposure (for light-sensitive seeds)',
+    'Seed treatment methods'
+  ]
 };
 
 const GerminationRate = () => {
@@ -268,6 +320,74 @@ const GerminationRate = () => {
             </Grid>
           )}
         </Grid>
+
+        <Box sx={{ mt: 3 }}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">What is Germination Rate?</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography variant="body1">{educationalContent.introduction}</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Why is Germination Rate Important?</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.importance.map((item, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <ScienceIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={item.title} secondary={item.description} />
+                    <Typography variant="body2" color="textSecondary">
+                      {item.impact}
+                    </Typography>
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Best Practices for Germination Testing</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.bestPractices.map((item, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <LightbulbIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={item} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Factors Affecting Germination Rate</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.factors.map((item, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <PsychologyIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={item} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
       </CardContent>
     </Card>
   );

@@ -4,22 +4,103 @@ import {
   CardContent,
   Typography,
   TextField,
-  Grid,
   Button,
+  Grid,
+  Paper,
+  Alert,
+  IconButton,
+  Box,
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Alert,
-  IconButton,
-  Box,
-  Divider,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
+import {
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  People as PeopleIcon,
+  MonetizationOn as MoneyIcon,
+  Schedule as ScheduleIcon,
+  Insights as InsightsIcon,
+  ExpandMore as ExpandMoreIcon,
+  Work as WorkIcon,
+  Info as InfoIcon
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Labor Cost Estimator helps farmers accurately budget and track labor expenses across different farming operations. This tool considers various tasks, wage rates, and time requirements to provide comprehensive labor cost projections.`,
+  laborManagementTips: [
+    {
+      tip: 'Task Scheduling',
+      description: 'Schedule labor-intensive tasks during optimal weather conditions and crop growth stages.'
+    },
+    {
+      tip: 'Efficiency Planning',
+      description: 'Group similar tasks together to minimize setup time and tool changes.'
+    },
+    {
+      tip: 'Skills Management',
+      description: 'Match worker skills to appropriate tasks for maximum efficiency.'
+    }
+  ],
+  costConsiderations: [
+    'Base wages and overtime rates',
+    'Seasonal variations in labor needs',
+    'Training and supervision time',
+    'Equipment operation skills',
+    'Worker benefits and insurance',
+    'Compliance with labor laws'
+  ],
+  laborTypes: [
+    {
+      title: 'Seasonal Workers',
+      description: 'Temporary workers for peak seasons',
+      considerations: 'Housing, training, scheduling'
+    },
+    {
+      title: 'Full-Time Staff',
+      description: 'Year-round employees',
+      considerations: 'Benefits, retention, skill development'
+    },
+    {
+      title: 'Contract Workers',
+      description: 'Task-specific laborers',
+      considerations: 'Availability, rates, quality control'
+    }
+  ],
+  costFactors: [
+    'Base wages and overtime',
+    'Payroll taxes and insurance',
+    'Worker benefits and accommodations',
+    'Training and supervision costs',
+    'Seasonal variations in labor needs'
+  ],
+  efficiencyTips: [
+    'Implement efficient work systems',
+    'Provide proper tools and equipment',
+    'Optimize crew sizes for tasks',
+    'Use time-tracking systems',
+    'Cross-train workers for flexibility'
+  ],
+  compliancePoints: [
+    'Follow minimum wage requirements',
+    'Maintain required worker documentation',
+    'Provide required breaks and conditions',
+    'Follow safety regulations',
+    'Keep accurate time and wage records'
+  ]
+};
 
 const taskTypes = {
   'Field Preparation': {
@@ -138,6 +219,100 @@ const LaborCostEstimator = () => {
         <Typography variant="h5" gutterBottom>
           Labor Cost Estimator
         </Typography>
+
+        {/* Educational Content */}
+        <Box mt={3} mb={3}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Understanding Farm Labor Costs</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography paragraph>{educationalContent.introduction}</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Types of Farm Labor</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.laborTypes.map((type, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <PeopleIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={type.title}
+                      secondary={
+                        <>
+                          <Typography variant="body2">{type.description}</Typography>
+                          <Typography variant="body2">Key Considerations: {type.considerations}</Typography>
+                        </>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Cost Factors to Consider</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.costFactors.map((factor, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <MoneyIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={factor} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Labor Efficiency Tips</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.efficiencyTips.map((tip, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <InsightsIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={tip} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Compliance Requirements</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {educationalContent.compliancePoints.map((point, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <ScheduleIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={point} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
+
+        {/* Calculator Content */}
         <Typography variant="body2" color="textSecondary" paragraph>
           Calculate and track labor costs for different farming tasks and operations.
         </Typography>
@@ -265,6 +440,7 @@ const LaborCostEstimator = () => {
           variant="contained"
           color="primary"
           onClick={calculateCosts}
+          startIcon={<WorkIcon />}
           sx={{ mb: 2 }}
         >
           Calculate Costs

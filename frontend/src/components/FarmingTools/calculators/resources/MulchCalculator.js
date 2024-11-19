@@ -22,9 +22,99 @@ import {
   Paper,
   Tooltip,
   IconButton,
-  Divider
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
-import { Info as InfoIcon } from '@mui/icons-material';
+import {
+  Info as InfoIcon,
+  ExpandMore as ExpandMoreIcon,
+  Grass as MulchIcon,
+  Calculate as CalculateIcon,
+  Layers as LayersIcon
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Mulch Calculator helps farmers and gardeners determine the right amount of mulch needed for their growing areas. Proper mulching improves soil health, conserves water, suppresses weeds, and regulates soil temperature.`,
+  
+  mulchBenefits: [
+    {
+      benefit: 'Moisture Conservation',
+      description: 'Reduces water evaporation by 25-50%, decreasing irrigation needs',
+      impact: 'Lower water bills and reduced plant stress'
+    },
+    {
+      benefit: 'Weed Suppression',
+      description: 'Creates a barrier that prevents weed seed germination',
+      impact: 'Reduced labor and herbicide costs'
+    },
+    {
+      benefit: 'Temperature Regulation',
+      description: 'Moderates soil temperature fluctuations',
+      impact: 'Extended growing season and improved root health'
+    },
+    {
+      benefit: 'Soil Health',
+      description: 'Adds organic matter as it decomposes',
+      impact: 'Enhanced soil structure and fertility'
+    }
+  ],
+
+  applicationGuidelines: {
+    depth: {
+      description: 'Recommended mulch depths by type',
+      guidelines: {
+        'Straw': '4-6 inches (10-15 cm)',
+        'Wood Chips': '2-4 inches (5-10 cm)',
+        'Compost': '1-2 inches (2.5-5 cm)',
+        'Leaves': '3-4 inches (7.5-10 cm)'
+      }
+    },
+    timing: {
+      description: 'Optimal mulching periods',
+      recommendations: [
+        'Apply after soil has warmed in spring',
+        'Reapply when mulch has decomposed',
+        'Add before winter for cold protection',
+        'Avoid mulching against plant stems'
+      ]
+    }
+  },
+
+  mulchTypes: {
+    organic: {
+      description: 'Materials that decompose over time',
+      examples: [
+        'Straw and hay',
+        'Wood chips and bark',
+        'Grass clippings',
+        'Composted materials'
+      ],
+      benefits: 'Improves soil as it breaks down'
+    },
+    inorganic: {
+      description: 'Non-decomposing materials',
+      examples: [
+        'Landscape fabric',
+        'Plastic sheeting',
+        'Rubber mulch',
+        'Gravel'
+      ],
+      benefits: 'Long-lasting weed suppression'
+    }
+  },
+
+  maintenanceTips: [
+    'Monitor mulch depth and replenish as needed',
+    'Keep mulch away from plant stems to prevent rot',
+    'Remove any diseased mulch promptly',
+    'Fluff compacted mulch periodically',
+    'Check moisture levels beneath mulch',
+    'Consider pH effects of mulch type'
+  ]
+};
 
 const MulchCalculator = () => {
   const [inputs, setInputs] = useState({
@@ -133,6 +223,128 @@ const MulchCalculator = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        Mulch Calculator
+      </Typography>
+
+      {/* Educational Content Section */}
+      <Box sx={{ mb: 4 }}>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <MulchIcon sx={{ mr: 1 }} /> About Mulching
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <LayersIcon sx={{ mr: 1 }} /> Benefits of Mulching
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {educationalContent.mulchBenefits.map((benefit, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{benefit.benefit}</Typography>
+                      <Typography paragraph>{benefit.description}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Impact: {benefit.impact}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <CalculateIcon sx={{ mr: 1 }} /> Application Guidelines
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>Recommended Depths</Typography>
+                    <Typography paragraph>{educationalContent.applicationGuidelines.depth.description}</Typography>
+                    <TableContainer>
+                      <Table size="small">
+                        <TableBody>
+                          {Object.entries(educationalContent.applicationGuidelines.depth.guidelines).map(([type, depth]) => (
+                            <TableRow key={type}>
+                              <TableCell><strong>{type}</strong></TableCell>
+                              <TableCell>{depth}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>Timing Recommendations</Typography>
+                    <Typography paragraph>{educationalContent.applicationGuidelines.timing.description}</Typography>
+                    <ul>
+                      {educationalContent.applicationGuidelines.timing.recommendations.map((rec, index) => (
+                        <li key={index}>{rec}</li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <InfoIcon sx={{ mr: 1 }} /> Types of Mulch
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={3}>
+              {Object.entries(educationalContent.mulchTypes).map(([key, value]) => (
+                <Grid item xs={12} md={6} key={key}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom sx={{ textTransform: 'capitalize' }}>
+                        {key} Mulch
+                      </Typography>
+                      <Typography paragraph>{value.description}</Typography>
+                      <Typography variant="subtitle1" gutterBottom>Examples:</Typography>
+                      <ul>
+                        {value.examples.map((example, index) => (
+                          <li key={index}>{example}</li>
+                        ))}
+                      </ul>
+                      <Typography variant="body2" color="text.secondary">
+                        Benefits: {value.benefits}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+
+      {/* Calculator Section */}
       <Typography variant="h5" gutterBottom>
         Mulch Coverage Calculator
         <Tooltip title="Calculate mulch needed based on area and desired depth">

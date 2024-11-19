@@ -17,12 +17,78 @@ import {
   CardContent,
   IconButton,
   Tooltip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Info as InfoIcon,
+  MonetizationOn as ProfitIcon,
+  Assessment as AnalysisIcon,
+  AccountBalance as AccountBalanceIcon,
+  TrendingUp as TrendingUpIcon,
+  Warning as WarningIcon,
+  Lightbulb as LightbulbIcon,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Farm Profit Calculator helps farmers analyze their financial performance by calculating gross margins, net profits, and return on investment. Understanding profitability is crucial for making informed decisions about crop selection, resource allocation, and business growth.`,
+  
+  profitComponents: [
+    {
+      title: 'Revenue Streams',
+      description: 'Direct sales, wholesale, value-added products',
+      impact: 'Primary source of income'
+    },
+    {
+      title: 'Variable Costs',
+      description: 'Inputs, labor, fuel, packaging',
+      impact: 'Changes with production volume'
+    },
+    {
+      title: 'Fixed Costs',
+      description: 'Land, equipment, insurance',
+      impact: 'Constant regardless of production'
+    },
+    {
+      title: 'Profit Margins',
+      description: 'Net income after all expenses',
+      impact: 'Indicates business sustainability'
+    }
+  ],
+
+  profitabilityFactors: [
+    'Crop selection and diversity',
+    'Market channel selection',
+    'Production efficiency',
+    'Cost management',
+    'Price optimization'
+  ],
+
+  commonChallenges: [
+    'Weather-related risks',
+    'Market price fluctuations',
+    'Labor availability and costs',
+    'Equipment maintenance expenses',
+    'Regulatory compliance costs'
+  ],
+
+  improvementStrategies: [
+    'Diversify income streams',
+    'Implement cost-saving technologies',
+    'Optimize production systems',
+    'Build strong market relationships',
+    'Monitor and adjust pricing strategies'
+  ]
+};
 
 const defaultExpenses = [
   { category: 'Seeds/Plants', amount: '', description: '' },
@@ -123,6 +189,97 @@ const ProfitCalculator = () => {
       <Typography variant="body2" color="text.secondary" paragraph>
         Calculate potential profits based on crop yield, market prices, and expenses.
       </Typography>
+
+      <Box mt={3} mb={3}>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Understanding Farm Profitability</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Components of Farm Profit</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.profitComponents.map((component, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <AccountBalanceIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={component.title}
+                    secondary={
+                      <>
+                        <Typography variant="body2">{component.description}</Typography>
+                        <Typography variant="body2">Impact: {component.impact}</Typography>
+                      </>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Key Profitability Factors</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.profitabilityFactors.map((factor, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <TrendingUpIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText primary={factor} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Common Challenges</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.commonChallenges.map((challenge, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <WarningIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText primary={challenge} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Strategies for Improvement</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {educationalContent.improvementStrategies.map((strategy, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <LightbulbIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText primary={strategy} />
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
 
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>

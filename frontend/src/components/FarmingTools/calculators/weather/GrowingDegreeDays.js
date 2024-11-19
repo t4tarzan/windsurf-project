@@ -11,7 +11,56 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Card,
+  CardContent,
 } from '@mui/material';
+import {
+  ExpandMore as ExpandMoreIcon,
+  Agriculture as AgricultureIcon,
+  Science as ScienceIcon,
+  WbSunny as WbSunnyIcon,
+  Info as InfoIcon,
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `Growing Degree Days (GDD) is a weather-based indicator for assessing crop development. It is a calculation used to estimate the growth and development of plants and insects during the growing season.`,
+  
+  importance: [
+    {
+      aspect: 'Crop Development',
+      description: 'Predicts plant growth stages and maturity dates',
+      impact: 'Helps plan harvesting and crop management activities'
+    },
+    {
+      aspect: 'Pest Management',
+      description: 'Forecasts insect development and population levels',
+      impact: 'Enables timely pest control interventions'
+    },
+    {
+      aspect: 'Resource Planning',
+      description: 'Estimates irrigation and fertilizer timing',
+      impact: 'Optimizes resource utilization and crop yields'
+    },
+    {
+      aspect: 'Risk Management',
+      description: 'Identifies potential weather-related risks',
+      impact: 'Helps in making informed crop protection decisions'
+    }
+  ],
+
+  calculation: {
+    method: 'GDD = [(Daily Max Temp + Daily Min Temp)/2] - Base Temperature',
+    notes: [
+      'If maximum temperature exceeds upper threshold, it is set to the threshold',
+      'If minimum temperature falls below base temperature, it is set to base temperature',
+      'Negative daily GDD values are set to zero'
+    ]
+  },
+};
 
 const cropBaseTemps = {
   'corn': { name: 'Corn', base: 10 },
@@ -93,11 +142,95 @@ const GrowingDegreeDays = () => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
+    <Paper elevation={3} sx={{ p: 3, maxWidth: 800, mx: 'auto', my: 3 }}>
+      <Typography variant="h4" gutterBottom align="center">
+        Growing Degree Days Calculator
+      </Typography>
+
+      {/* Educational Content Section */}
+      <Box mb={4}>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <InfoIcon sx={{ mr: 1 }} /> What are Growing Degree Days?
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <AgricultureIcon sx={{ mr: 1 }} /> Importance in Agriculture
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {educationalContent.importance.map((item, index) => (
+                <Grid item xs={12} sm={6} key={index}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{item.aspect}</Typography>
+                      <Typography paragraph>{item.description}</Typography>
+                      <Typography variant="body2" color="textSecondary">{item.impact}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <ScienceIcon sx={{ mr: 1 }} /> Calculation Method
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="subtitle1" gutterBottom>Formula:</Typography>
+            <Typography paragraph sx={{ fontWeight: 'bold' }}>{educationalContent.calculation.method}</Typography>
+            <Typography variant="subtitle1" gutterBottom>Important Notes:</Typography>
+            <ul>
+              {educationalContent.calculation.notes.map((note, index) => (
+                <li key={index}>
+                  <Typography paragraph>{note}</Typography>
+                </li>
+              ))}
+            </ul>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <WbSunnyIcon sx={{ mr: 1 }} /> Crop-Specific Information
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {Object.entries(cropBaseTemps).map(([key, value], index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{value.name}</Typography>
+                      <Typography paragraph>Base temperature: {value.base}°C</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+
+      {/* Calculator Form */}
       <Typography variant="h5" gutterBottom>
         Growing Degree Days Calculator
       </Typography>
-      <Typography variant="body2" color="text.secondary" paragraph>
+      <Typography variant="body2" color="textSecondary" paragraph>
         Calculate growing degree days (GDD) and estimate crop maturity based on temperature data.
       </Typography>
 

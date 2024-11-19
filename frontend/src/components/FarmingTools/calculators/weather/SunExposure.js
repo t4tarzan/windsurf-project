@@ -13,8 +13,107 @@ import {
   Box,
   Alert,
   Slider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Divider,
 } from '@mui/material';
-import { WbSunny, LocationOn, Terrain, NorthWest } from '@mui/icons-material';
+import { 
+  WbSunny, 
+  LocationOn, 
+  Terrain, 
+  NorthWest,
+  ExpandMore as ExpandMoreIcon,
+  Info as InfoIcon,
+  Science as ScienceIcon,
+  Agriculture as AgricultureIcon 
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `Sun exposure is a critical factor in plant growth and agricultural productivity. Understanding and optimizing sun exposure helps farmers make informed decisions about crop placement, timing, and management strategies.`,
+  
+  keyFactors: [
+    {
+      factor: 'Latitude & Longitude',
+      description: 'Geographic coordinates determine daily sun path and intensity',
+      impact: 'Affects total sunlight hours and seasonal variations'
+    },
+    {
+      factor: 'Slope & Aspect',
+      description: 'Terrain characteristics influence sunlight reception',
+      impact: 'Determines direct sunlight exposure and heat accumulation'
+    },
+    {
+      factor: 'Obstructions',
+      description: 'Physical barriers that block sunlight',
+      impact: 'Creates shade patterns and reduces total light exposure'
+    },
+    {
+      factor: 'Seasonal Changes',
+      description: 'Sun angle and day length variations throughout the year',
+      impact: 'Influences crop selection and planting timing'
+    }
+  ],
+
+  seasonalConsiderations: {
+    spring: {
+      description: 'Increasing day length and sun angle',
+      considerations: [
+        'Critical for seed germination',
+        'Early crop establishment',
+        'Frost protection needs'
+      ]
+    },
+    summer: {
+      description: 'Maximum sun intensity and duration',
+      considerations: [
+        'Peak photosynthetic potential',
+        'Heat stress management',
+        'Irrigation requirements'
+      ]
+    },
+    fall: {
+      description: 'Decreasing day length and sun angle',
+      considerations: [
+        'Late season crop maturation',
+        'Cover crop establishment',
+        'Harvest timing'
+      ]
+    },
+    winter: {
+      description: 'Minimum sun exposure',
+      considerations: [
+        'Protected cultivation options',
+        'Winter crop selection',
+        'Light supplementation needs'
+      ]
+    }
+  },
+
+  practicalApplications: [
+    {
+      application: 'Crop Planning',
+      description: 'Optimize planting locations and timing',
+      benefits: 'Maximize yield potential and quality'
+    },
+    {
+      application: 'Infrastructure Planning',
+      description: 'Design of greenhouses and shade structures',
+      benefits: 'Create optimal growing environments'
+    },
+    {
+      application: 'Resource Management',
+      description: 'Water and temperature management',
+      benefits: 'Improve resource use efficiency'
+    },
+    {
+      application: 'Risk Mitigation',
+      description: 'Identify and address light-related challenges',
+      benefits: 'Reduce crop stress and losses'
+    }
+  ]
+};
 
 const SunExposure = () => {
   const [inputs, setInputs] = useState({
@@ -259,235 +358,338 @@ const SunExposure = () => {
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Typography variant="h5" gutterBottom>
-          Sun Exposure Calculator
-        </Typography>
-        
-        <Typography variant="body2" color="textSecondary" paragraph>
-          Calculate the amount of sunlight your growing area receives based on location, terrain, and obstacles.
-        </Typography>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        Sun Exposure Calculator
+      </Typography>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Latitude"
-              name="latitude"
-              value={inputs.latitude}
-              onChange={handleInputChange}
-              type="number"
-              InputProps={{
-                startAdornment: <LocationOn color="action" sx={{ mr: 1 }} />,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Longitude"
-              name="longitude"
-              value={inputs.longitude}
-              onChange={handleInputChange}
-              type="number"
-              InputProps={{
-                startAdornment: <LocationOn color="action" sx={{ mr: 1 }} />,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Season</InputLabel>
-              <Select
-                name="season"
-                value={inputs.season}
-                onChange={handleInputChange}
-                label="Season"
-              >
-                {seasons.map(season => (
-                  <MenuItem key={season.value} value={season.value}>
-                    {season.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Date"
-              name="date"
-              value={inputs.date}
-              onChange={handleInputChange}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography gutterBottom>
-              Slope (degrees)
+      {/* Educational Content Section */}
+      <Box sx={{ mb: 4 }}>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <WbSunny sx={{ mr: 1 }} /> About Sun Exposure
             </Typography>
-            <Slider
-              value={inputs.slope}
-              onChange={handleSliderChange('slope')}
-              valueLabelDisplay="auto"
-              min={0}
-              max={45}
-              marks={[
-                { value: 0, label: '0°' },
-                { value: 45, label: '45°' },
-              ]}
-            />
-          </Grid>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+          </AccordionDetails>
+        </Accordion>
 
-          <Grid item xs={12}>
-            <Typography gutterBottom>
-              Aspect (degrees from North)
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <ScienceIcon sx={{ mr: 1 }} /> Key Factors
             </Typography>
-            <Slider
-              value={inputs.aspect}
-              onChange={handleSliderChange('aspect')}
-              valueLabelDisplay="auto"
-              min={0}
-              max={360}
-              marks={[
-                { value: 0, label: 'N' },
-                { value: 90, label: 'E' },
-                { value: 180, label: 'S' },
-                { value: 270, label: 'W' },
-                { value: 360, label: 'N' },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom>
-              Obstructions
-            </Typography>
-            {inputs.obstructions.map((obstruction, index) => (
-              <Box key={index} sx={{ mb: 2, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={3}>
-                    <FormControl fullWidth>
-                      <InputLabel>Type</InputLabel>
-                      <Select
-                        value={obstruction.type}
-                        onChange={(e) => updateObstruction(index, 'type', e.target.value)}
-                        label="Type"
-                      >
-                        {obstructionTypes.map(type => (
-                          <MenuItem key={type.value} value={type.value}>
-                            {type.label}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      label="Distance (m)"
-                      type="number"
-                      value={obstruction.distance}
-                      onChange={(e) => updateObstruction(index, 'distance', e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      label="Height (m)"
-                      type="number"
-                      value={obstruction.height}
-                      onChange={(e) => updateObstruction(index, 'height', e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={2}>
-                    <TextField
-                      fullWidth
-                      label="Azimuth (°)"
-                      type="number"
-                      value={obstruction.azimuth}
-                      onChange={(e) => updateObstruction(index, 'azimuth', e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={1}>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => removeObstruction(index)}
-                    >
-                      Remove
-                    </Button>
-                  </Grid>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {educationalContent.keyFactors.map((factor, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{factor.factor}</Typography>
+                      <Typography paragraph>{factor.description}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Impact: {factor.impact}
+                      </Typography>
+                    </CardContent>
+                  </Card>
                 </Grid>
-              </Box>
-            ))}
-            <Button
-              variant="outlined"
-              onClick={addObstruction}
-              startIcon={<Terrain />}
-            >
-              Add Obstruction
-            </Button>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={calculateSunExposure}
-              fullWidth
-              startIcon={<WbSunny />}
-            >
-              Calculate Sun Exposure
-            </Button>
-          </Grid>
-
-          {error && (
-            <Grid item xs={12}>
-              <Alert severity="error">{error}</Alert>
+              ))}
             </Grid>
-          )}
+          </AccordionDetails>
+        </Accordion>
 
-          {results && (
-            <Grid item xs={12}>
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Results
-                </Typography>
-                <Typography variant="body1">
-                  Daily Sun Hours: {results.dailySunHours} hours
-                </Typography>
-                <Typography variant="body1">
-                  Light Intensity Category: {results.intensity}
-                </Typography>
-                <Typography variant="body1">
-                  Maximum Solar Elevation: {results.maxSolarElevation}°
-                </Typography>
-                
-                <Typography variant="h6" sx={{ mt: 2 }} gutterBottom>
-                  Recommendations
-                </Typography>
-                <ul>
-                  {results.recommendations.map((rec, index) => (
-                    <li key={index}>
-                      <Typography variant="body1">{rec}</Typography>
-                    </li>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <AgricultureIcon sx={{ mr: 1 }} /> Seasonal Considerations
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {Object.entries(educationalContent.seasonalConsiderations).map(([season, info]) => (
+                <Grid item xs={12} md={6} key={season}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom sx={{ textTransform: 'capitalize' }}>
+                        {season}
+                      </Typography>
+                      <Typography paragraph>{info.description}</Typography>
+                      <Typography variant="subtitle2" gutterBottom>Key Considerations:</Typography>
+                      <ul>
+                        {info.considerations.map((consideration, index) => (
+                          <li key={index}>
+                            <Typography variant="body2">{consideration}</Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <InfoIcon sx={{ mr: 1 }} /> Practical Applications
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              {educationalContent.practicalApplications.map((app, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{app.application}</Typography>
+                      <Typography paragraph>{app.description}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Benefits: {app.benefits}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+
+      {/* Calculator Section */}
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Sun Exposure Calculator
+          </Typography>
+          
+          <Typography variant="body2" color="textSecondary" paragraph>
+            Calculate the amount of sunlight your growing area receives based on location, terrain, and obstacles.
+          </Typography>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Latitude"
+                name="latitude"
+                value={inputs.latitude}
+                onChange={handleInputChange}
+                type="number"
+                InputProps={{
+                  startAdornment: <LocationOn color="action" sx={{ mr: 1 }} />,
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Longitude"
+                name="longitude"
+                value={inputs.longitude}
+                onChange={handleInputChange}
+                type="number"
+                InputProps={{
+                  startAdornment: <LocationOn color="action" sx={{ mr: 1 }} />,
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Season</InputLabel>
+                <Select
+                  name="season"
+                  value={inputs.season}
+                  onChange={handleInputChange}
+                  label="Season"
+                >
+                  {seasons.map(season => (
+                    <MenuItem key={season.value} value={season.value}>
+                      {season.label}
+                    </MenuItem>
                   ))}
-                </ul>
-              </Box>
+                </Select>
+              </FormControl>
             </Grid>
-          )}
-        </Grid>
-      </CardContent>
-    </Card>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Date"
+                name="date"
+                value={inputs.date}
+                onChange={handleInputChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography gutterBottom>
+                Slope (degrees)
+              </Typography>
+              <Slider
+                value={inputs.slope}
+                onChange={handleSliderChange('slope')}
+                valueLabelDisplay="auto"
+                min={0}
+                max={45}
+                marks={[
+                  { value: 0, label: '0°' },
+                  { value: 45, label: '45°' },
+                ]}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography gutterBottom>
+                Aspect (degrees from North)
+              </Typography>
+              <Slider
+                value={inputs.aspect}
+                onChange={handleSliderChange('aspect')}
+                valueLabelDisplay="auto"
+                min={0}
+                max={360}
+                marks={[
+                  { value: 0, label: 'N' },
+                  { value: 90, label: 'E' },
+                  { value: 180, label: 'S' },
+                  { value: 270, label: 'W' },
+                  { value: 360, label: 'N' },
+                ]}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Obstructions
+              </Typography>
+              {inputs.obstructions.map((obstruction, index) => (
+                <Box key={index} sx={{ mb: 2, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={3}>
+                      <FormControl fullWidth>
+                        <InputLabel>Type</InputLabel>
+                        <Select
+                          value={obstruction.type}
+                          onChange={(e) => updateObstruction(index, 'type', e.target.value)}
+                          label="Type"
+                        >
+                          {obstructionTypes.map(type => (
+                            <MenuItem key={type.value} value={type.value}>
+                              {type.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        fullWidth
+                        label="Distance (m)"
+                        type="number"
+                        value={obstruction.distance}
+                        onChange={(e) => updateObstruction(index, 'distance', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        fullWidth
+                        label="Height (m)"
+                        type="number"
+                        value={obstruction.height}
+                        onChange={(e) => updateObstruction(index, 'height', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                      <TextField
+                        fullWidth
+                        label="Azimuth (°)"
+                        type="number"
+                        value={obstruction.azimuth}
+                        onChange={(e) => updateObstruction(index, 'azimuth', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={1}>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => removeObstruction(index)}
+                      >
+                        Remove
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Box>
+              ))}
+              <Button
+                variant="outlined"
+                onClick={addObstruction}
+                startIcon={<Terrain />}
+              >
+                Add Obstruction
+              </Button>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={calculateSunExposure}
+                fullWidth
+                startIcon={<WbSunny />}
+              >
+                Calculate Sun Exposure
+              </Button>
+            </Grid>
+
+            {error && (
+              <Grid item xs={12}>
+                <Alert severity="error">{error}</Alert>
+              </Grid>
+            )}
+
+            {results && (
+              <Grid item xs={12}>
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Results
+                  </Typography>
+                  <Typography variant="body1">
+                    Daily Sun Hours: {results.dailySunHours} hours
+                  </Typography>
+                  <Typography variant="body1">
+                    Light Intensity Category: {results.intensity}
+                  </Typography>
+                  <Typography variant="body1">
+                    Maximum Solar Elevation: {results.maxSolarElevation}°
+                  </Typography>
+                  
+                  <Typography variant="h6" sx={{ mt: 2 }} gutterBottom>
+                    Recommendations
+                  </Typography>
+                  <ul>
+                    {results.recommendations.map((rec, index) => (
+                      <li key={index}>
+                        <Typography variant="body1">{rec}</Typography>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

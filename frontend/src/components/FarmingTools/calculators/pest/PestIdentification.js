@@ -12,14 +12,6 @@ import {
   Button,
   Box,
   Divider,
-  Paper,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -27,9 +19,37 @@ import {
 import {
   ExpandMore as ExpandMoreIcon,
   BugReport as BugIcon,
-  LocalFlorist as PlantIcon,
-  Warning as WarningIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
+import PestInfoCard from '../../components/pest/PestInfoCard';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Pest Identification Tool helps farmers accurately identify crop pests through their characteristics and symptoms. Early and accurate pest identification is crucial for effective pest management.`,
+  
+  importancePoints: [
+    {
+      title: 'Early Detection',
+      content: 'Identifying pests early allows for timely intervention before significant damage occurs.'
+    },
+    {
+      title: 'Targeted Treatment',
+      content: 'Proper identification ensures the most effective treatment methods are used.'
+    },
+    {
+      title: 'Cost Efficiency',
+      content: 'Accurate identification prevents wastage of resources on incorrect treatments.'
+    }
+  ],
+  
+  bestPractices: [
+    'Regular crop inspection',
+    'Document pest characteristics',
+    'Monitor pest patterns',
+    'Consider environmental factors',
+    'Consult reference materials'
+  ]
+};
 
 const pestDatabase = {
   'aphids': {
@@ -160,266 +180,125 @@ const pestDatabase = {
 };
 
 const PestIdentification = () => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedPest, setSelectedPest] = useState('');
-  const [searchSymptom, setSearchSymptom] = useState('');
-  const [searchCrop, setSearchCrop] = useState('');
   const [filteredPests, setFilteredPests] = useState([]);
+
+  const handleSearch = (event) => {
+    const term = event.target.value.toLowerCase();
+    setSearchTerm(term);
+    
+    if (term) {
+      const filtered = Object.entries(pestDatabase).filter(([key, pest]) => {
+        return pest.name.toLowerCase().includes(term) ||
+               pest.type.toLowerCase().includes(term) ||
+               pest.symptoms.some(symptom => symptom.toLowerCase().includes(term)) ||
+               pest.affectedCrops.some(crop => crop.toLowerCase().includes(term));
+      });
+      setFilteredPests(filtered);
+    } else {
+      setFilteredPests([]);
+    }
+  };
 
   const handlePestSelect = (event) => {
     setSelectedPest(event.target.value);
-  };
-
-  const searchPests = () => {
-    const results = Object.entries(pestDatabase).filter(([_, pest]) => {
-      const matchesSymptom = searchSymptom === '' || 
-        pest.symptoms.some(s => s.toLowerCase().includes(searchSymptom.toLowerCase()));
-      const matchesCrop = searchCrop === '' ||
-        pest.affectedCrops.some(c => c.toLowerCase().includes(searchCrop.toLowerCase()));
-      return matchesSymptom && matchesCrop;
-    });
-    setFilteredPests(results);
-  };
-
-  const renderSeverityChip = (severity) => {
-    const color = {
-      low: 'success',
-      moderate: 'warning',
-      high: 'error'
-    }[severity];
-
-    return (
-      <Chip
-        icon={<WarningIcon />}
-        label={severity.toUpperCase()}
-        color={color}
-        size="small"
-        sx={{ ml: 1 }}
-      />
-    );
   };
 
   return (
     <Card>
       <CardContent>
         <Typography variant="h5" gutterBottom>
-          Pest Identification Guide
-        </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
-          Identify common garden pests and learn about control methods.
+          Pest Identification Tool
         </Typography>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Select Known Pest</InputLabel>
-              <Select
-                value={selectedPest}
-                label="Select Known Pest"
-                onChange={handlePestSelect}
-              >
-                {Object.entries(pestDatabase).map(([key, pest]) => (
-                  <MenuItem key={key} value={key}>
-                    {pest.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              label="Search by Symptom"
-              value={searchSymptom}
-              onChange={(e) => setSearchSymptom(e.target.value)}
-              placeholder="e.g., wilting, holes, yellow"
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              label="Search by Affected Crop"
-              value={searchCrop}
-              onChange={(e) => setSearchCrop(e.target.value)}
-              placeholder="e.g., tomatoes, cabbage"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              onClick={searchPests}
-              disabled={!searchSymptom && !searchCrop}
-            >
-              Search Pests
-            </Button>
-          </Grid>
-        </Grid>
-
-        {selectedPest && (
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              {pestDatabase[selectedPest].name}
-              {renderSeverityChip(pestDatabase[selectedPest].severity)}
-            </Typography>
-            
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    <BugIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    Description
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    {pestDatabase[selectedPest].description}
-                  </Typography>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle1" gutterBottom>
-                    Identification Tips
-                  </Typography>
-                  {pestDatabase[selectedPest].identificationTips.map((tip, index) => (
-                    <Typography key={index} variant="body2" sx={{ mb: 1 }}>
-                      • {tip}
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">About Pest Identification</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography paragraph>{educationalContent.introduction}</Typography>
+            <Grid container spacing={2}>
+              {educationalContent.importancePoints.map((point) => (
+                <Grid item xs={12} md={4} key={point.title}>
+                  <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      {point.title}
                     </Typography>
-                  ))}
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    <PlantIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    Symptoms
-                  </Typography>
-                  {pestDatabase[selectedPest].symptoms.map((symptom, index) => (
-                    <Typography key={index} variant="body2" sx={{ mb: 1 }}>
-                      • {symptom}
+                    <Typography variant="body2">
+                      {point.content}
                     </Typography>
-                  ))}
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle1" gutterBottom>
-                    Natural Control Methods
-                  </Typography>
-                  {pestDatabase[selectedPest].naturalControls.map((control, index) => (
-                    <Typography key={index} variant="body2" sx={{ mb: 1 }}>
-                      • {control}
-                    </Typography>
-                  ))}
-                </Paper>
-              </Grid>
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Affected Crops
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    {pestDatabase[selectedPest].affectedCrops.map((crop) => (
-                      <Chip
-                        key={crop}
-                        label={crop}
-                        sx={{ m: 0.5 }}
-                        variant="outlined"
-                      />
-                    ))}
                   </Box>
-                </Paper>
-              </Grid>
+                </Grid>
+              ))}
             </Grid>
-          </Box>
-        )}
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>Best Practices</Typography>
+              <Grid container spacing={1}>
+                {educationalContent.bestPractices.map((practice, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Typography variant="body2">• {practice}</Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
 
-        {filteredPests.length > 0 && !selectedPest && (
-          <Box sx={{ mt: 4 }}>
+        <Box sx={{ mt: 3, mb: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Search Pests"
+                variant="outlined"
+                value={searchTerm}
+                onChange={handleSearch}
+                InputProps={{
+                  startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Select Pest</InputLabel>
+                <Select
+                  value={selectedPest}
+                  onChange={handlePestSelect}
+                  label="Select Pest"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {Object.entries(pestDatabase).map(([key, pest]) => (
+                    <MenuItem value={key} key={key}>
+                      {pest.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </Box>
+
+        {searchTerm && filteredPests.length > 0 && (
+          <Box sx={{ mb: 2 }}>
             <Typography variant="h6" gutterBottom>
               Search Results
             </Typography>
             {filteredPests.map(([key, pest]) => (
-              <Accordion key={key} sx={{ mb: 1 }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography>
-                    {pest.name}
-                    {renderSeverityChip(pest.severity)}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Description
-                      </Typography>
-                      <Typography variant="body2" paragraph>
-                        {pest.description}
-                      </Typography>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Symptoms
-                      </Typography>
-                      {pest.symptoms.map((symptom, index) => (
-                        <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
-                          • {symptom}
-                        </Typography>
-                      ))}
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Affected Crops
-                      </Typography>
-                      <Box sx={{ mb: 2 }}>
-                        {pest.affectedCrops.map((crop) => (
-                          <Chip
-                            key={crop}
-                            label={crop}
-                            sx={{ m: 0.5 }}
-                            variant="outlined"
-                            size="small"
-                          />
-                        ))}
-                      </Box>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Natural Controls
-                      </Typography>
-                      {pest.naturalControls.map((control, index) => (
-                        <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
-                          • {control}
-                        </Typography>
-                      ))}
-                    </Grid>
-                  </Grid>
-                </AccordionDetails>
-              </Accordion>
+              <PestInfoCard key={key} pest={pest} />
             ))}
           </Box>
         )}
 
-        {!selectedPest && filteredPests.length === 0 && (searchSymptom || searchCrop) && (
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="body1" color="text.secondary">
-              No pests found matching your search criteria.
+        {selectedPest && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Selected Pest Details
             </Typography>
+            <PestInfoCard pest={pestDatabase[selectedPest]} />
           </Box>
-        )}
-
-        {!selectedPest && !searchSymptom && !searchCrop && (
-          <TableContainer component={Paper} sx={{ mt: 4 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Pest</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Severity</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {Object.entries(pestDatabase).map(([key, pest]) => (
-                  <TableRow key={key}>
-                    <TableCell>{pest.name}</TableCell>
-                    <TableCell>{pest.type}</TableCell>
-                    <TableCell>{pest.description}</TableCell>
-                    <TableCell>
-                      {renderSeverityChip(pest.severity)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
         )}
       </CardContent>
     </Card>

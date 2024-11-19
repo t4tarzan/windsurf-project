@@ -1,23 +1,85 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
   Typography,
   TextField,
-  Grid,
   Button,
+  Grid,
+  Paper,
+  Alert,
+  MenuItem,
+  Box,
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Alert,
-  MenuItem,
-  Box,
-  Divider,
 } from '@mui/material';
+import {
+  Calculate as CalculateIcon,
+  TrendingUp as TrendingUpIcon,
+  Info as InfoIcon,
+  AccountBalance as FinanceIcon,
+  Warning as WarningIcon,
+  ExpandMore as ExpandMoreIcon,
+} from '@mui/icons-material';
+
+// Educational content for SEO and user guidance
+const educationalContent = {
+  introduction: `The Return on Investment (ROI) Calculator helps farmers evaluate the financial viability of agricultural investments. This tool analyzes costs, returns, and payback periods to make informed investment decisions for farm improvements and expansions.`,
+  
+  roiComponents: [
+    {
+      component: 'Initial Investment',
+      description: 'Total upfront costs required',
+      examples: ['Purchase price', 'Installation costs', 'Training expenses', 'Setup fees']
+    },
+    {
+      component: 'Operating Costs',
+      description: 'Ongoing expenses related to the investment',
+      examples: ['Maintenance', 'Labor', 'Fuel/Energy', 'Insurance']
+    },
+    {
+      component: 'Revenue Generation',
+      description: 'Income produced by the investment',
+      examples: ['Increased yield', 'Premium pricing', 'Labor savings', 'Resource efficiency']
+    }
+  ],
+
+  evaluationMetrics: {
+    paybackPeriod: {
+      description: 'Time required to recover the initial investment',
+      considerations: ['Cash flow timing', 'Seasonal variations', 'Market conditions']
+    },
+    netPresentValue: {
+      description: 'Current value of future cash flows',
+      considerations: ['Discount rate', 'Investment horizon', 'Risk factors']
+    },
+    benefitCostRatio: {
+      description: 'Ratio of benefits to costs over time',
+      considerations: ['Direct benefits', 'Indirect benefits', 'Hidden costs']
+    }
+  },
+
+  investmentConsiderations: [
+    'Alignment with farm goals and strategy',
+    'Impact on operational efficiency',
+    'Environmental sustainability',
+    'Market demand and trends',
+    'Regulatory compliance',
+    'Available financing options'
+  ]
+};
 
 const investmentTypes = {
   'Equipment & Machinery': {
@@ -50,6 +112,44 @@ const investmentTypes = {
     typicalLifespan: '5-10 years',
     considerations: 'Animal welfare, feed costs, veterinary care'
   }
+};
+
+const additionalEducationalContent = {
+  introduction: `Return on Investment (ROI) in agriculture measures the profitability of your farming investments by comparing the gains from an investment relative to its cost. Understanding ROI helps farmers make informed decisions about farm improvements, equipment purchases, and crop selection.`,
+  
+  importance: [
+    {
+      title: 'Investment Decision Making',
+      description: 'Evaluate potential farm investments',
+      impact: 'Make data-driven financial decisions'
+    },
+    {
+      title: 'Resource Allocation',
+      description: 'Optimize distribution of limited resources',
+      impact: 'Maximize farm profitability'
+    },
+    {
+      title: 'Risk Assessment',
+      description: 'Compare different investment opportunities',
+      impact: 'Minimize financial risks'
+    }
+  ],
+
+  considerations: [
+    'Time value of money and inflation',
+    'Market volatility and price fluctuations',
+    'Weather and environmental risks',
+    'Labor and operational costs',
+    'Equipment depreciation'
+  ],
+
+  tips: [
+    'Include all direct and indirect costs',
+    'Consider long-term maintenance costs',
+    'Account for seasonal variations',
+    'Factor in potential risks and uncertainties',
+    'Review historical data when available'
+  ]
 };
 
 const ROICalculator = () => {
@@ -117,12 +217,79 @@ const ROICalculator = () => {
     <Card>
       <CardContent>
         <Typography variant="h5" gutterBottom>
-          ROI Calculator
-        </Typography>
-        <Typography variant="body2" color="textSecondary" paragraph>
-          Calculate the return on investment for your farming projects and equipment.
+          Agricultural ROI Calculator
         </Typography>
 
+        {/* Educational Content */}
+        <Box mt={3} mb={3}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Understanding Agricultural ROI</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography paragraph>{educationalContent.introduction}</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Why ROI Matters in Farming</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {additionalEducationalContent.importance.map((item, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <TrendingUpIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={item.title}
+                      secondary={`${item.description} - ${item.impact}`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Key Considerations</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {additionalEducationalContent.considerations.map((item, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <InfoIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={item} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Tips for Accurate ROI Calculation</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {additionalEducationalContent.tips.map((tip, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <CalculateIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={tip} />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
+
+        {/* Calculator Content */}
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <TextField

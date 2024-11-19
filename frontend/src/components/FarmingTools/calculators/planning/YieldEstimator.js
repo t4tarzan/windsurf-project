@@ -17,7 +17,23 @@ import {
   Alert,
   Slider,
   Box,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
+import {
+  LocalFlorist as CropIcon,
+  WbSunny as SunIcon,
+  Opacity as WaterIcon,
+  Terrain as SoilIcon,
+  BugReport as PestIcon,
+  Calculate as CalculateIcon,
+  Info as InfoIcon,
+} from '@mui/icons-material';
 
 const cropData = {
   'Tomato': {
@@ -89,6 +105,87 @@ const growingConditionsMarks = [
   { value: 100, label: 'Excellent' }
 ];
 
+const educationalContent = {
+  introduction: {
+    title: "Understanding Crop Yields",
+    content: "Accurate yield estimation is crucial for farm planning, resource allocation, and financial projections. This calculator considers key factors like plant spacing, growing conditions, and crop-specific characteristics to provide reliable yield estimates."
+  },
+  yieldFactors: [
+    {
+      title: "Growing Conditions",
+      factors: [
+        "Soil quality and fertility",
+        "Water availability and irrigation",
+        "Sunlight exposure",
+        "Temperature range",
+        "Pest and disease pressure"
+      ]
+    },
+    {
+      title: "Management Practices",
+      factors: [
+        "Proper plant spacing",
+        "Timely fertilization",
+        "Regular pest monitoring",
+        "Weed control",
+        "Harvest timing"
+      ]
+    }
+  ],
+  cropSpecificInfo: {
+    'Tomato': {
+      description: "Heavy feeder, requires consistent moisture and strong support",
+      keyFactors: [
+        "Proper pruning increases yield",
+        "Regular fertilization essential",
+        "Consistent moisture prevents splitting",
+        "Temperature affects fruit set"
+      ],
+      seasonalTips: "Plant after last frost, maintain night temperatures above 55°F (13°C)"
+    },
+    'Lettuce': {
+      description: "Quick-growing crop, sensitive to heat and moisture stress",
+      keyFactors: [
+        "Cool season crop",
+        "Consistent moisture critical",
+        "Harvest before bolting",
+        "Succession planting recommended"
+      ],
+      seasonalTips: "Best grown in spring and fall, protect from extreme heat"
+    },
+    'Carrot': {
+      description: "Root crop requiring deep, loose soil for optimal development",
+      keyFactors: [
+        "Soil preparation crucial",
+        "Thin seedlings carefully",
+        "Keep soil consistently moist",
+        "Protect shoulders from sunlight"
+      ],
+      seasonalTips: "Can be grown year-round in mild climates, sweeter after frost"
+    },
+    'Potato': {
+      description: "Heavy feeder, requires regular hilling and pest monitoring",
+      keyFactors: [
+        "Proper hilling increases yield",
+        "Regular moisture important",
+        "Monitor for late blight",
+        "Storage conditions affect quality"
+      ],
+      seasonalTips: "Plant 2-4 weeks before last frost date"
+    },
+    'Bush Beans': {
+      description: "Nitrogen-fixing crop, good for crop rotation",
+      keyFactors: [
+        "Direct sow recommended",
+        "Avoid overwatering",
+        "Pick regularly to encourage production",
+        "Good air circulation prevents disease"
+      ],
+      seasonalTips: "Plant when soil warms to 60°F (16°C)"
+    }
+  }
+};
+
 const YieldEstimator = () => {
   const [selectedCrop, setSelectedCrop] = useState('');
   const [plotLength, setPlotLength] = useState('');
@@ -144,146 +241,217 @@ const YieldEstimator = () => {
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Typography variant="h5" gutterBottom>
-          Yield Estimator
-        </Typography>
-        <Typography variant="body2" color="textSecondary" paragraph>
-          Estimate potential crop yields based on plot size and growing conditions.
-        </Typography>
+    <Box sx={{ maxWidth: 1200, margin: 'auto', padding: 3 }}>
+      <Typography variant="h4" gutterBottom align="center">
+        Crop Yield Estimator
+      </Typography>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              select
-              fullWidth
-              label="Select Crop"
-              value={selectedCrop}
-              onChange={(e) => setSelectedCrop(e.target.value)}
-              margin="normal"
-            >
-              {Object.keys(cropData).map((crop) => (
-                <MenuItem key={crop} value={crop}>
-                  {crop}
-                </MenuItem>
-              ))}
-            </TextField>
+      {/* Educational Content Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            {educationalContent.introduction.title}
+          </Typography>
+          <Typography paragraph>
+            {educationalContent.introduction.content}
+          </Typography>
+
+          <Grid container spacing={3}>
+            {educationalContent.yieldFactors.map((section, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <Typography variant="h6" gutterBottom color="primary">
+                  {section.title}
+                </Typography>
+                <List>
+                  {section.factors.map((factor, idx) => (
+                    <ListItem key={idx}>
+                      <ListItemIcon>
+                        {index === 0 ? <SunIcon color="primary" /> : <CropIcon color="primary" />}
+                      </ListItemIcon>
+                      <ListItemText primary={factor} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Grid>
+            ))}
           </Grid>
+        </CardContent>
+      </Card>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Plot Length (meters)"
-              type="number"
-              value={plotLength}
-              onChange={(e) => setPlotLength(e.target.value)}
-              margin="normal"
-              inputProps={{ min: 0, step: 0.1 }}
-            />
-          </Grid>
+      {/* Calculator Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Calculate Your Expected Yield
+          </Typography>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Plot Width (meters)"
-              type="number"
-              value={plotWidth}
-              onChange={(e) => setPlotWidth(e.target.value)}
-              margin="normal"
-              inputProps={{ min: 0, step: 0.1 }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography gutterBottom>Growing Conditions</Typography>
-            <Slider
-              value={growingConditions}
-              onChange={(e, newValue) => setGrowingConditions(newValue)}
-              marks={growingConditionsMarks}
-              step={null}
-              valueLabelDisplay="off"
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={calculateYield}
-              disabled={!selectedCrop || !plotLength || !plotWidth}
-            >
-              Calculate Yield
-            </Button>
-          </Grid>
-
-          {error && (
-            <Grid item xs={12}>
-              <Alert severity="error">{error}</Alert>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                select
+                fullWidth
+                label="Select Crop"
+                value={selectedCrop}
+                onChange={(e) => setSelectedCrop(e.target.value)}
+                margin="normal"
+              >
+                {Object.keys(cropData).map((crop) => (
+                  <MenuItem key={crop} value={crop}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <CropIcon sx={{ mr: 1 }} />
+                      {crop}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </TextField>
+              {selectedCrop && (
+                <Box sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" gutterBottom color="primary">
+                    Crop Information
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    {educationalContent.cropSpecificInfo[selectedCrop].description}
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom color="primary">
+                    Key Success Factors:
+                  </Typography>
+                  <List dense>
+                    {educationalContent.cropSpecificInfo[selectedCrop].keyFactors.map((factor, index) => (
+                      <ListItem key={index}>
+                        <ListItemIcon>
+                          <InfoIcon fontSize="small" color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary={factor} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              )}
             </Grid>
-          )}
 
-          {selectedCrop && cropData[selectedCrop] && (
-            <Grid item xs={12}>
-              <TableContainer component={Paper} sx={{ mt: 2 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Yield per Plant</TableCell>
-                      <TableCell>Plant Spacing</TableCell>
-                      <TableCell>Row Spacing</TableCell>
-                      <TableCell>Notes</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        {cropData[selectedCrop].yieldPerPlant.min}-{cropData[selectedCrop].yieldPerPlant.max} {cropData[selectedCrop].yieldPerPlant.unit}
-                      </TableCell>
-                      <TableCell>{cropData[selectedCrop].spacingInRow} cm</TableCell>
-                      <TableCell>{cropData[selectedCrop].rowSpacing} cm</TableCell>
-                      <TableCell>{cropData[selectedCrop].notes}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Plot Length (meters)"
+                type="number"
+                value={plotLength}
+                onChange={(e) => setPlotLength(e.target.value)}
+                margin="normal"
+                inputProps={{ min: 0, step: 0.1 }}
+                helperText="Enter the length of your growing area"
+              />
+              <TextField
+                fullWidth
+                label="Plot Width (meters)"
+                type="number"
+                value={plotWidth}
+                onChange={(e) => setPlotWidth(e.target.value)}
+                margin="normal"
+                inputProps={{ min: 0, step: 0.1 }}
+                helperText="Enter the width of your growing area"
+              />
             </Grid>
-          )}
 
-          {results && (
             <Grid item xs={12}>
-              <TableContainer component={Paper} sx={{ mt: 2 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Planting Layout</TableCell>
-                      <TableCell>Plant Density</TableCell>
-                      <TableCell>Estimated Yield Range</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        {results.numberOfRows} rows × {results.plantsPerRow} plants
-                        <Typography variant="caption" display="block">
-                          Total: {results.totalPlants} plants
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {results.plantDensity} plants/m²
-                      </TableCell>
-                      <TableCell>
-                        {results.minYield} - {results.maxYield} {results.unit}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Typography gutterBottom>Growing Conditions</Typography>
+              <Box sx={{ px: 2 }}>
+                <Slider
+                  value={growingConditions}
+                  onChange={(e, newValue) => setGrowingConditions(newValue)}
+                  marks={growingConditionsMarks}
+                  step={null}
+                  min={0}
+                  max={100}
+                />
+              </Box>
+              <Typography variant="caption" color="textSecondary">
+                Adjust based on your soil quality, water availability, and general growing conditions
+              </Typography>
             </Grid>
-          )}
-        </Grid>
-      </CardContent>
-    </Card>
+
+            <Grid item xs={12} sx={{ textAlign: 'center' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={calculateYield}
+                startIcon={<CalculateIcon />}
+                size="large"
+              >
+                Calculate Yield Estimate
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {error && (
+        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {results && (
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom color="primary">
+              Yield Estimate Results
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Metric</TableCell>
+                        <TableCell align="right">Value</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>Number of Rows</TableCell>
+                        <TableCell align="right">{results.numberOfRows}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>Plants per Row</TableCell>
+                        <TableCell align="right">{results.plantsPerRow}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>Total Plants</TableCell>
+                        <TableCell align="right">{results.totalPlants}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>Plant Density (plants/m²)</TableCell>
+                        <TableCell align="right">{results.plantDensity}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>Expected Yield Range</TableCell>
+                        <TableCell align="right">
+                          {results.minYield} - {results.maxYield} {results.unit}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Grid>
+
+              {selectedCrop && (
+                <Grid item xs={12}>
+                  <Alert severity="info" sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Seasonal Tips:
+                    </Typography>
+                    <Typography variant="body2">
+                      {educationalContent.cropSpecificInfo[selectedCrop].seasonalTips}
+                    </Typography>
+                  </Alert>
+                </Grid>
+              )}
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
+    </Box>
   );
 };
 

@@ -3,17 +3,26 @@ import {
   Box,
   Drawer,
   List,
-  ListItem,
   ListItemIcon,
   ListItemText,
   ListItemButton,
   Collapse,
   Typography,
+  Grid,
+  Card,
+  CardContent,
+  Divider,
+  IconButton,
   Paper,
-  Container,
-  Divider
+  Container
 } from '@mui/material';
 import {
+  ExpandLess,
+  ExpandMore,
+  Share as ShareIcon,
+  Facebook as FacebookIcon,
+  Twitter as TwitterIcon,
+  LinkedIn as LinkedInIcon,
   Agriculture as AgricultureIcon,
   WaterDrop as WaterIcon,
   WbSunny as WeatherIcon,
@@ -22,8 +31,6 @@ import {
   BugReport as PestIcon,
   Terrain as SoilIcon,
   Pets as LivestockIcon,
-  ExpandLess,
-  ExpandMore,
   Calculate as CalculateIcon
 } from '@mui/icons-material';
 
@@ -70,7 +77,6 @@ import CompactionTest from './calculators/soil/CompactionTest';
 import OrganicMatter from './calculators/soil/OrganicMatter';
 import BreedingCalendar from './calculators/livestock/BreedingCalendar';
 import HealthRecords from './calculators/livestock/HealthRecords';
-// ... other calculator imports will go here
 
 const farmingTools = {
   planting: {
@@ -166,9 +172,119 @@ const farmingTools = {
   }
 };
 
+const toolsOverview = {
+  planting: {
+    description: 'Optimize your planting strategies with our comprehensive suite of spacing and planning calculators. From greenhouse space optimization to raised bed planning, these tools help you maximize your growing area and improve crop yields.',
+    features: [
+      'Precise seed spacing calculations',
+      'Optimal plant density recommendations',
+      'Greenhouse space optimization',
+      'Raised bed layout planning',
+      'Row spacing optimization for different crops'
+    ]
+  },
+  resources: {
+    description: 'Manage your farm resources efficiently with our resource management calculators. Track water usage, plan irrigation, and optimize fertilizer applications to reduce waste and improve crop health.',
+    features: [
+      'Water requirement calculations',
+      'Irrigation scheduling',
+      'Fertilizer application planning',
+      'Compost ratio optimization',
+      'Mulch coverage calculations'
+    ]
+  },
+  weather: {
+    description: 'Make informed decisions based on weather patterns and climate data. Our weather tools help you plan for frost dates, manage water resources, and optimize crop placement based on sun exposure.',
+    features: [
+      'Growing degree days tracking',
+      'Frost date predictions',
+      'Rainfall harvesting calculations',
+      'Sun exposure analysis',
+      'Wind protection planning'
+    ]
+  },
+  planning: {
+    description: 'Plan your farming operations with precision using our comprehensive planning tools. From crop rotation to succession planting, these calculators help you optimize your farm\'s productivity throughout the season.',
+    features: [
+      'Crop rotation planning',
+      'Companion planting guidance',
+      'Harvest date estimation',
+      'Succession planting schedules',
+      'Yield predictions'
+    ]
+  },
+  financial: {
+    description: 'Track and optimize your farm\'s financial performance with our suite of financial calculators. Analyze costs, estimate returns, and make data-driven decisions to improve profitability.',
+    features: [
+      'Profit calculations',
+      'ROI analysis',
+      'Labor cost estimation',
+      'Input cost tracking',
+      'Market price analysis'
+    ]
+  },
+  pest: {
+    description: 'Protect your crops with our integrated pest management tools. Identify pests, track infestations, and implement effective control measures while maintaining ecological balance.',
+    features: [
+      'Pest identification database',
+      'Treatment recommendations',
+      'Monitoring logs',
+      'Disease risk assessment',
+      'IPM strategy planning'
+    ]
+  },
+  soil: {
+    description: 'Maintain optimal soil health with our soil management calculators. Monitor key soil parameters, plan amendments, and ensure your soil provides the best growing conditions for your crops.',
+    features: [
+      'pH management',
+      'Compaction testing',
+      'Organic matter tracking',
+      'Nutrient analysis',
+      'Amendment planning'
+    ]
+  },
+  livestock: {
+    description: 'Efficiently manage your livestock operations with our comprehensive tracking and planning tools. From breeding schedules to health records, these tools help you maintain healthy and productive animals.',
+    features: [
+      'Breeding calendar management',
+      'Health record tracking',
+      'Stocking rate calculations',
+      'Feed requirement planning',
+      'Grazing rotation optimization'
+    ]
+  }
+};
+
+const SocialShare = () => (
+  <Box sx={{ mt: 2 }}>
+    <Divider sx={{ my: 2 }} />
+    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+      Share this tool:
+    </Typography>
+    <IconButton 
+      color="primary" 
+      onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`, '_blank')}
+    >
+      <FacebookIcon />
+    </IconButton>
+    <IconButton 
+      color="primary" 
+      onClick={() => window.open(`https://twitter.com/intent/tweet?url=${window.location.href}`, '_blank')}
+    >
+      <TwitterIcon />
+    </IconButton>
+    <IconButton 
+      color="primary" 
+      onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${window.location.href}`, '_blank')}
+    >
+      <LinkedInIcon />
+    </IconButton>
+  </Box>
+);
+
 const drawerWidth = 280;
 
-const FarmingTools = () => {
+function FarmingTools() {
   const [openCategory, setOpenCategory] = useState('');
   const [selectedTool, setSelectedTool] = useState(null);
 
@@ -184,9 +300,53 @@ const FarmingTools = () => {
   };
 
   const renderSelectedTool = () => {
-    if (!selectedTool) return null;
+    if (!selectedTool) {
+      return (
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h4" gutterBottom>
+            Welcome to Farming Tools
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Our comprehensive suite of farming calculators and planning tools is designed to help you optimize your agricultural operations. 
+            Select a category from the menu to explore our tools.
+          </Typography>
+          <Grid container spacing={3}>
+            {Object.entries(toolsOverview).map(([category, info]) => (
+              <Grid item xs={12} md={6} key={category}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {farmingTools[category].title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" paragraph>
+                      {info.description}
+                    </Typography>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Key Features:
+                    </Typography>
+                    <List dense>
+                      {info.features.map((feature, index) => (
+                        <ListItemButton key={index} dense>
+                          <ListItemText primary={feature} />
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      );
+    }
+
     const Component = selectedTool.tool.component;
-    return Component ? <Component /> : (
+    return Component ? (
+      <Box sx={{ p: 3 }}>
+        <Component />
+        <SocialShare />
+      </Box>
+    ) : (
       <Typography variant="body1" color="text.secondary" sx={{ p: 3 }}>
         This calculator is currently under development.
       </Typography>
@@ -203,72 +363,53 @@ const FarmingTools = () => {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            mt: '64px',
+            top: '64px',
             height: 'calc(100% - 64px)',
-            backgroundColor: 'background.default',
-            borderRight: '1px solid',
-            borderColor: 'divider'
           },
         }}
       >
-        <Box sx={{ overflow: 'auto' }}>
-          <Typography variant="h6" sx={{ p: 2, textAlign: 'center' }}>
-            Farming Tools
-          </Typography>
-          <Divider />
-          <List>
-            {Object.entries(farmingTools).map(([category, { icon, title, tools }]) => (
-              <React.Fragment key={category}>
-                <ListItemButton onClick={() => handleCategoryClick(category)}>
-                  <ListItemIcon sx={{ color: 'primary.main' }}>
-                    {icon}
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={title} 
-                    sx={{ 
-                      '& .MuiTypography-root': { 
-                        fontWeight: 'bold',
-                        color: 'primary.main' 
-                      } 
-                    }} 
-                  />
-                  {openCategory === category ? <ExpandLess /> : <ExpandMore />}
-                </ListItemButton>
-                <Collapse in={openCategory === category} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
-                    {tools.map((tool, index) => (
-                      <ListItemButton
-                        key={index}
-                        sx={{ pl: 4 }}
-                        onClick={() => handleToolClick(category, index)}
-                        selected={selectedTool?.category === category && selectedTool?.tool.name === tool.name}
-                      >
-                        <ListItemIcon sx={{ color: 'text.secondary' }}>
-                          <CalculateIcon />
-                        </ListItemIcon>
-                        <ListItemText 
-                          primary={tool.name}
-                          sx={{ 
-                            '& .MuiTypography-root': { 
-                              fontSize: '0.95rem',
-                              color: 'text.primary' 
-                            } 
-                          }}
-                        />
-                      </ListItemButton>
-                    ))}
-                  </List>
-                </Collapse>
-              </React.Fragment>
-            ))}
-          </List>
-        </Box>
+        <List>
+          {Object.entries(farmingTools).map(([category, { icon, title, tools }]) => (
+            <React.Fragment key={category}>
+              <ListItemButton onClick={() => handleCategoryClick(category)}>
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText primary={title} />
+                {openCategory === category ? <ExpandLess /> : <ExpandMore />}
+              </ListItemButton>
+              <Collapse in={openCategory === category} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {tools.map((tool, index) => (
+                    <ListItemButton
+                      key={tool.name}
+                      sx={{ pl: 4 }}
+                      onClick={() => handleToolClick(category, index)}
+                      selected={selectedTool?.tool.name === tool.name}
+                    >
+                      <ListItemIcon sx={{ color: 'text.secondary' }}>
+                        <CalculateIcon />
+                      </ListItemIcon>
+                      <ListItemText primary={tool.name} />
+                    </ListItemButton>
+                  ))}
+                </List>
+              </Collapse>
+            </React.Fragment>
+          ))}
+        </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, width: `calc(100% - ${drawerWidth}px)` }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          bgcolor: 'background.default',
+          overflow: 'auto',
+          height: 'calc(100vh - 64px)',
+        }}
+      >
         {renderSelectedTool()}
       </Box>
     </Box>
   );
-};
+}
 
 export default FarmingTools;
