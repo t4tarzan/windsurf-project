@@ -43,99 +43,126 @@ import NutrientCalculator from './calculators/soil/NutrientCalculator';
 import StockingRateCalculator from './calculators/livestock/StockingRateCalculator';
 import FeedCalculator from './calculators/livestock/FeedCalculator';
 import GrazingRotationPlanner from './calculators/livestock/GrazingRotationPlanner';
+import GreenhouseCalculator from './calculators/planting/GreenhouseCalculator';
+import RaisedBedPlanner from './calculators/planting/RaisedBedPlanner';
+import IrrigationScheduler from './calculators/resources/IrrigationScheduler';
+import FertilizerCalculator from './calculators/resources/FertilizerCalculator';
+import CompostCalculator from './calculators/resources/CompostCalculator';
+import MulchCalculator from './calculators/resources/MulchCalculator';
+import RainWaterHarvesting from './calculators/weather/RainWaterHarvesting';
+import Evapotranspiration from './calculators/weather/Evapotranspiration';
+import SunExposure from './calculators/weather/SunExposure';
+import WindBreakEffectiveness from './calculators/weather/WindBreakEffectiveness';
+import HarvestDateEstimator from './calculators/planning/HarvestDateEstimator';
+import SuccessionPlanting from './calculators/planning/SuccessionPlanting';
+import GerminationRate from './calculators/planning/GerminationRate';
+import YieldEstimator from './calculators/planning/YieldEstimator';
+import InputCostCalculator from './calculators/financial/InputCostCalculator';
+import ROICalculator from './calculators/financial/ROICalculator';
+import LaborCostEstimator from './calculators/financial/LaborCostEstimator';
+import MarketPriceAnalyzer from './calculators/financial/MarketPriceAnalyzer';
+import CompanionPlantingGuide from './calculators/planning/CompanionPlantingGuide';
+import PestIdentification from './calculators/pest/PestIdentification';
+import TreatmentGuide from './calculators/pest/TreatmentGuide';
+import PestMonitoringLog from './calculators/pest/PestMonitoringLog';
+import PHManagement from './calculators/soil/pHManagement';
+import CompactionTest from './calculators/soil/CompactionTest';
+import OrganicMatter from './calculators/soil/OrganicMatter';
+import BreedingCalendar from './calculators/livestock/BreedingCalendar';
+import HealthRecords from './calculators/livestock/HealthRecords';
 // ... other calculator imports will go here
 
 const farmingTools = {
   planting: {
     icon: <AgricultureIcon />,
     title: 'Planting & Spacing',
-    tools: {
-      seedSpacing: { name: 'Seed Spacing Calculator', component: SeedSpacingCalculator },
-      plantDensity: { name: 'Plant Density Calculator', component: PlantDensityCalculator },
-      rowSpacing: { name: 'Row Spacing Optimizer', component: RowSpacingOptimizer },
-      greenhouse: { name: 'Greenhouse Space Calculator', component: null },
-      raisedBed: { name: 'Raised Bed Planner', component: null }
-    }
+    tools: [
+      { name: 'Greenhouse Space Calculator', component: GreenhouseCalculator },
+      { name: 'Raised Bed Planner', component: RaisedBedPlanner },
+      { name: 'Seed Spacing Calculator', component: SeedSpacingCalculator },
+      { name: 'Plant Density Calculator', component: PlantDensityCalculator },
+      { name: 'Row Spacing Optimizer', component: RowSpacingOptimizer }
+    ]
   },
   resources: {
     icon: <WaterIcon />,
     title: 'Resource Management',
-    tools: {
-      waterReq: { name: 'Water Requirement Calculator', component: WaterRequirementCalculator },
-      irrigation: { name: 'Irrigation Scheduler', component: null },
-      fertilizer: { name: 'Fertilizer Calculator', component: null },
-      soilAmend: { name: 'Soil Amendment Calculator', component: SoilAmendmentCalculator },
-      compost: { name: 'Compost Ratio Calculator', component: null },
-      mulch: { name: 'Mulch Coverage Calculator', component: null }
-    }
+    tools: [
+      { name: 'Water Requirement Calculator', component: WaterRequirementCalculator },
+      { name: 'Irrigation Scheduler', component: IrrigationScheduler },
+      { name: 'Fertilizer Calculator', component: FertilizerCalculator },
+      { name: 'Soil Amendment Calculator', component: SoilAmendmentCalculator },
+      { name: 'Compost Ratio Calculator', component: CompostCalculator },
+      { name: 'Mulch Coverage Calculator', component: MulchCalculator }
+    ]
   },
   weather: {
     icon: <WeatherIcon />,
     title: 'Weather & Climate',
-    tools: {
-      gdd: { name: 'Growing Degree Days', component: GrowingDegreeDays },
-      frost: { name: 'Frost Date Calculator', component: FrostDateCalculator },
-      rainwater: { name: 'Rain Water Harvesting', component: null },
-      evaporation: { name: 'Evapotranspiration', component: null },
-      sunExposure: { name: 'Sun Exposure', component: null },
-      windbreak: { name: 'Wind Break Effectiveness', component: null }
-    }
+    tools: [
+      { name: 'Growing Degree Days', component: GrowingDegreeDays },
+      { name: 'Frost Date Calculator', component: FrostDateCalculator },
+      { name: 'Rain Water Harvesting', component: RainWaterHarvesting },
+      { name: 'Evapotranspiration', component: Evapotranspiration },
+      { name: 'Sun Exposure', component: SunExposure },
+      { name: 'Wind Break Effectiveness', component: WindBreakEffectiveness }
+    ]
   },
   planning: {
     icon: <PlanningIcon />,
     title: 'Crop Planning',
-    tools: {
-      rotation: { name: 'Crop Rotation Planner', component: CropRotationPlanner },
-      companion: { name: 'Companion Planting Guide', component: null },
-      harvest: { name: 'Harvest Date Estimator', component: null },
-      succession: { name: 'Succession Planting', component: null },
-      germination: { name: 'Germination Rate', component: null },
-      yield: { name: 'Yield Estimator', component: null }
-    }
+    tools: [
+      { name: 'Crop Rotation Planner', component: CropRotationPlanner },
+      { name: 'Companion Planting Guide', component: CompanionPlantingGuide },
+      { name: 'Harvest Date Estimator', component: HarvestDateEstimator },
+      { name: 'Succession Planting', component: SuccessionPlanting },
+      { name: 'Germination Rate', component: GerminationRate },
+      { name: 'Yield Estimator', component: YieldEstimator }
+    ]
   },
   financial: {
     icon: <FinanceIcon />,
     title: 'Financial Tools',
-    tools: {
-      profitability: { name: 'Profit Calculator', component: ProfitCalculator },
-      inputCost: { name: 'Input Cost Calculator', component: null },
-      roi: { name: 'ROI Calculator', component: null },
-      labor: { name: 'Labor Cost Estimator', component: null },
-      market: { name: 'Market Price Analyzer', component: null }
-    }
+    tools: [
+      { name: 'Profit Calculator', component: ProfitCalculator },
+      { name: 'Input Cost Calculator', component: InputCostCalculator },
+      { name: 'ROI Calculator', component: ROICalculator },
+      { name: 'Labor Cost Estimator', component: LaborCostEstimator },
+      { name: 'Market Price Analyzer', component: MarketPriceAnalyzer }
+    ]
   },
   pest: {
     icon: <PestIcon />,
     title: 'Pest & Disease',
-    tools: {
-      ipm: { name: 'IPM Decision Tool', component: IPMCalculator },
-      disease: { name: 'Disease Risk Calculator', component: DiseaseRiskCalculator },
-      identification: { name: 'Pest Identification', component: null },
-      treatment: { name: 'Treatment Guide', component: null },
-      monitoring: { name: 'Pest Monitoring Log', component: null }
-    }
+    tools: [
+      { name: 'IPM Decision Tool', component: IPMCalculator },
+      { name: 'Disease Risk Calculator', component: DiseaseRiskCalculator },
+      { name: 'Pest Identification', component: PestIdentification },
+      { name: 'Treatment Guide', component: TreatmentGuide },
+      { name: 'Pest Monitoring Log', component: PestMonitoringLog }
+    ]
   },
   soil: {
     icon: <SoilIcon />,
     title: 'Soil Management',
-    tools: {
-      amendment: { name: 'Soil Amendment Calculator', component: SoilAmendmentCalculator },
-      nutrient: { name: 'Nutrient Calculator', component: NutrientCalculator },
-      ph: { name: 'pH Management', component: null },
-      compaction: { name: 'Compaction Test', component: null },
-      organic: { name: 'Organic Matter', component: null }
-    }
+    tools: [
+      { name: 'Soil Amendment Calculator', component: SoilAmendmentCalculator },
+      { name: 'Nutrient Calculator', component: NutrientCalculator },
+      { name: 'pH Management', component: PHManagement },
+      { name: 'Compaction Test', component: CompactionTest },
+      { name: 'Organic Matter', component: OrganicMatter }
+    ]
   },
   livestock: {
     icon: <LivestockIcon />,
     title: 'Livestock Integration',
-    tools: {
-      stocking: { name: 'Stocking Rate Calculator', component: StockingRateCalculator },
-      feed: { name: 'Feed Calculator', component: FeedCalculator },
-      grazing: { name: 'Grazing Rotation Planner', component: GrazingRotationPlanner },
-      breeding: { name: 'Breeding Calendar', component: null },
-      health: { name: 'Health Records', component: null }
-    }
+    tools: [
+      { name: 'Stocking Rate Calculator', component: StockingRateCalculator },
+      { name: 'Feed Calculator', component: FeedCalculator },
+      { name: 'Grazing Rotation Planner', component: GrazingRotationPlanner },
+      { name: 'Breeding Calendar', component: BreedingCalendar },
+      { name: 'Health Records', component: HealthRecords }
+    ]
   }
 };
 
@@ -149,8 +176,21 @@ const FarmingTools = () => {
     setOpenCategory(openCategory === category ? '' : category);
   };
 
-  const handleToolClick = (category, toolKey) => {
-    setSelectedTool({ category, tool: farmingTools[category].tools[toolKey] });
+  const handleToolClick = (category, toolIndex) => {
+    setSelectedTool({
+      category,
+      tool: farmingTools[category].tools[toolIndex]
+    });
+  };
+
+  const renderSelectedTool = () => {
+    if (!selectedTool) return null;
+    const Component = selectedTool.tool.component;
+    return Component ? <Component /> : (
+      <Typography variant="body1" color="text.secondary" sx={{ p: 3 }}>
+        This calculator is currently under development.
+      </Typography>
+    );
   };
 
   return (
@@ -196,11 +236,11 @@ const FarmingTools = () => {
                 </ListItemButton>
                 <Collapse in={openCategory === category} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
-                    {Object.entries(tools).map(([toolKey, tool]) => (
+                    {tools.map((tool, index) => (
                       <ListItemButton
-                        key={toolKey}
+                        key={index}
                         sx={{ pl: 4 }}
-                        onClick={() => handleToolClick(category, toolKey)}
+                        onClick={() => handleToolClick(category, index)}
                         selected={selectedTool?.category === category && selectedTool?.tool.name === tool.name}
                       >
                         <ListItemIcon sx={{ color: 'text.secondary' }}>
@@ -225,9 +265,7 @@ const FarmingTools = () => {
         </Box>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3, width: `calc(100% - ${drawerWidth}px)` }}>
-        {selectedTool && selectedTool.tool.component && (
-          <selectedTool.tool.component />
-        )}
+        {renderSelectedTool()}
       </Box>
     </Box>
   );
