@@ -8,6 +8,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
+    'react-app',
   ],
   parserOptions: {
     ecmaFeatures: {
@@ -21,6 +22,7 @@ module.exports = {
     'react/prop-types': 'off',
     'react/react-in-jsx-scope': 'off',
     'no-unused-vars': 'warn',
+    'react/no-unescaped-entities': 'off',
   },
   settings: {
     react: {
