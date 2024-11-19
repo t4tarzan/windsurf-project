@@ -140,105 +140,18 @@ class PlantAnalysisService {
       };
 
       return mockData;
-
-      /* Commenting out the actual API call for now
-      // Create form data for PlantNet API
-      const formData = new FormData();
-      
-      // Handle both File objects and base64 strings
-      if (imageData instanceof File) {
-        formData.append('images', imageData, imageData.name);
-      } else if (typeof imageData === 'string' && imageData.startsWith('data:image')) {
-        // Convert base64 image to blob
-        const response = await fetch(imageData);
-        const blob = await response.blob();
-        formData.append('images', blob, 'image.jpg');
-      } else {
-        throw new Error('Invalid image format. Please provide a File object or base64 image string.');
-      }
-
-      // Add API key to form data instead of params
-      formData.append('api-key', this.plantnetApiKey);
-      
-      // Call PlantNet API
-      const now = Date.now();
-      if (now - this.lastRequestTime < this.minRequestInterval) {
-        await new Promise(resolve => setTimeout(resolve, this.minRequestInterval));
-      }
-      this.lastRequestTime = Date.now();
-
-      const response = await axios.post(
-        'https://my-api.plantnet.org/v2/identify/all',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
-
-      if (!response.data || !response.data.results || response.data.results.length === 0) {
-        throw new Error('No plant identification results found');
-      }
-
-      // Get the top result
-      const topResult = response.data.results[0];
-      
-      // Get additional plant information from Trefle API
-      const trefleResponse = await axios.get(
-        'https://trefle.io/api/v1/plants/search',
-        {
-          params: {
-            q: topResult.species.scientificNameWithoutAuthor,
-            token: this.trefleApiKey
-          }
-        }
-      ).catch(error => {
-        console.warn('Failed to fetch additional plant info from Trefle:', error);
-        return { data: { data: [] } };
-      });
-
-      // Combine results
-      const plantInfo = {
-        name: topResult.species.commonNames?.[0] || topResult.species.scientificNameWithoutAuthor,
-        scientificName: topResult.species.scientificNameWithoutAuthor,
-        confidence: topResult.score,
-        family: topResult.species.family?.scientificNameWithoutAuthor,
-        genus: topResult.species.genus?.scientificNameWithoutAuthor,
-        images: topResult.images?.map(img => img.url) || [],
-        additionalInfo: trefleResponse.data.data[0] || {},
-        healthAssessment: await this.assessPlantHealth(topResult.images[0]?.url)
-      };
-
-      return plantInfo;
-      */
-
     } catch (error) {
-      console.error('Plant analysis error:', error);
-      throw new Error('Failed to analyze plant image: ' + (error.message || 'Please try again.'));
+      console.error('Error in analyzeImage:', error);
+      throw error;
     }
-  }
-
-  assessPlantHealth(imageUrl) {
-    // For now, return a random health issue for demonstration
-    const issues = Object.values(this.issuesDatabase);
-    const randomIssue = issues[Math.floor(Math.random() * issues.length)];
-    
-    return {
-      status: Math.random() > 0.5 ? 'Healthy' : 'Needs Attention',
-      confidence: Math.random() * 0.5 + 0.5,
-      issues: randomIssue ? [randomIssue] : [],
-      recommendations: [
-        'Ensure proper watering schedule',
-        'Check light conditions',
-        'Monitor for pest infestations'
-      ]
-    };
   }
 }
 
 // Create singleton instance
 const plantAnalysisService = new PlantAnalysisService();
 
-export const analyzeImage = (image) => plantAnalysisService.analyzeImage(image);
+export const analyzeImage = async (image) => {
+  return await plantAnalysisService.analyzeImage(image);
+};
+
 export default plantAnalysisService;
