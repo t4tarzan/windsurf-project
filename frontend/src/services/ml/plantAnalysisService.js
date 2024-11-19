@@ -1,12 +1,9 @@
 import axios from 'axios';
-import * as tf from '@tensorflow/tfjs';
-import * as mobilenet from '@tensorflow-models/mobilenet';
 
 class PlantAnalysisService {
   constructor() {
     this.plantnetApiKey = process.env.REACT_APP_PLANTNET_API_KEY;
     this.trefleApiKey = process.env.REACT_APP_TREFLE_API_KEY;
-    this.model = null;
     
     // Add rate limiting
     this.lastRequestTime = 0;
@@ -16,199 +13,137 @@ class PlantAnalysisService {
     this.issuesDatabase = {
       yellowLeaves: {
         name: 'Yellow Leaves',
-        description: 'Leaves are turning yellow',
-        severity: 'moderate',
-        causes: [
-          'Overwatering',
-          'Nutrient deficiency',
-          'Poor lighting'
-        ],
+        description: 'Leaves turning yellow',
+        causes: ['Overwatering', 'Nutrient deficiency', 'Poor lighting'],
         solutions: [
-          'Adjust watering schedule',
+          'Reduce watering frequency',
           'Check soil nutrients',
-          'Ensure proper lighting'
+          'Adjust light exposure'
         ]
       },
       brownSpots: {
         name: 'Brown Spots',
-        description: 'Brown spots appearing on leaves',
-        severity: 'moderate',
-        causes: [
-          'Fungal infection',
-          'Sunburn',
-          'Mineral buildup'
-        ],
+        description: 'Brown spots on leaves',
+        causes: ['Fungal infection', 'Sunburn', 'Mineral buildup'],
         solutions: [
           'Treat with fungicide',
-          'Adjust sun exposure',
-          'Flush soil to remove mineral buildup'
+          'Provide shade',
+          'Flush soil with clean water'
         ]
       },
       wilting: {
         name: 'Wilting',
-        description: 'Plant appears droopy or wilted',
-        severity: 'severe',
-        causes: [
-          'Underwatering',
-          'Root damage',
-          'Temperature stress'
-        ],
+        description: 'Plant appears droopy',
+        causes: ['Underwatering', 'Root problems', 'Temperature stress'],
         solutions: [
-          'Water immediately',
+          'Increase watering',
           'Check root health',
-          'Adjust environmental conditions'
+          'Adjust environment temperature'
         ]
       }
     };
-
-    // Initialize the model when service is created
-    this.initialize();
   }
 
-  async initialize() {
-    if (!this.model) {
-      console.log('Initializing TensorFlow model...');
-      try {
-        this.model = await mobilenet.load();
-        console.log('TensorFlow model loaded successfully');
-      } catch (error) {
-        console.error('Failed to load TensorFlow model:', error);
-        throw error;
-      }
-    }
-    return this.model;
-  }
-
-  processResults(predictions) {
-    const topPrediction = predictions[0];
-    return {
-      plantName: topPrediction.className,
-      confidence: topPrediction.probability
-    };
-  }
-
-  async analyzeImage(file) {
+  async analyzeImage(imageData) {
     try {
-      // Ensure model is initialized
-      if (!this.model) {
-        await this.initialize();
-      }
-
-      // Create an image element from the file
-      const img = new Image();
-      const imageUrl = URL.createObjectURL(file);
-      
-      return new Promise((resolve, reject) => {
-        img.onload = async () => {
-          try {
-            // Create a tensor from the image
-            const tensor = tf.browser.fromPixels(img);
-            const predictions = await this.model.classify(tensor);
-            tensor.dispose();
-
-            const { plantName, confidence } = this.processResults(predictions);
-            const { healthScore, issues, recommendations } = await this.analyzeHealth(img);
-
-            URL.revokeObjectURL(imageUrl);
-            
-            resolve({
-              plantName,
-              confidence,
-              healthScore,
-              issues,
-              recommendations,
-              optimalConditions: this.determineOptimalConditions(plantName)
-            });
-          } catch (error) {
-            reject(error);
+      // For development, return mock data
+      const mockData = {
+        name: 'Snake Plant',
+        scientificName: 'Sansevieria trifasciata',
+        confidence: 0.95,
+        family: 'Asparagaceae',
+        genus: 'Sansevieria',
+        images: [
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg/1200px-Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg'
+        ],
+        additionalInfo: {
+          common_name: 'Snake Plant',
+          scientific_name: 'Sansevieria trifasciata',
+          family_common_name: 'Asparagus family',
+          observations: 'Common houseplant known for air purification'
+        },
+        detailedInfo: {
+          nativeTo: ['West Africa', 'Nigeria', 'Congo'],
+          growthHabit: 'Evergreen perennial',
+          lightRequirements: 'Low to bright indirect light',
+          wateringNeeds: 'Low, drought tolerant',
+          soilPreference: 'Well-draining potting mix',
+          idealTemperature: '70-90°F (21-32°C)',
+          propagationMethods: ['Division', 'Leaf cuttings'],
+          toxicity: 'Mildly toxic to pets if ingested',
+          edible: false,
+          uses: [
+            'Air purification',
+            'Indoor decoration',
+            'Low-maintenance houseplant'
+          ]
+        },
+        uses: {
+          medicinal: true,
+          medicinalUses: [
+            'Traditional medicine for treating coughs',
+            'Used in treatments for snake bites',
+            'Has antimicrobial properties'
+          ],
+          edibleUses: [],
+          otherUses: [
+            'Fiber production',
+            'Natural air purifier',
+            'Ornamental purposes'
+          ]
+        },
+        trivia: [
+          'Snake plants were named for the snake-like patterns on their leaves',
+          'NASA has studied snake plants for their air-purifying abilities',
+          'In some cultures, these plants are believed to bring good luck',
+          'They can survive in very low light conditions for weeks',
+          'The plant produces oxygen mainly at night, unlike most other plants'
+        ],
+        seasonalInfo: {
+          growingSeason: ['Spring', 'Summer'],
+          dormancyPeriod: ['Winter'],
+          floweringSeason: ['Late Spring', 'Early Summer'],
+          pruningTime: ['Spring'],
+          fertilizingSchedule: ['Spring', 'Summer'],
+          commonIssues: {
+            spring: ['New growth may be pale', 'Watch for increased watering needs'],
+            summer: ['Protect from direct sun', 'Monitor for pests'],
+            fall: ['Reduce watering', 'Prepare for dormancy'],
+            winter: ['Minimal watering needed', 'Protect from cold drafts']
           }
-        };
-
-        img.onerror = () => {
-          URL.revokeObjectURL(imageUrl);
-          reject(new Error('Failed to load image'));
-        };
-
-        img.src = imageUrl;
-      });
-    } catch (error) {
-      throw new Error('Failed to analyze plant image: ' + error.message);
-    }
-  }
-
-  async analyzeHealth(imageElement) {
-    try {
-      const tensor = tf.browser.fromPixels(imageElement);
-      const rgbData = await tensor.data();
-      tensor.dispose();
-
-      // Calculate average RGB values
-      const pixelCount = rgbData.length / 3;
-      const avgRed = rgbData.slice(0, pixelCount).reduce((a, b) => a + b, 0) / pixelCount;
-      const avgGreen = rgbData.slice(pixelCount, 2 * pixelCount).reduce((a, b) => a + b, 0) / pixelCount;
-      const avgBlue = rgbData.slice(2 * pixelCount).reduce((a, b) => a + b, 0) / pixelCount;
-
-      // Calculate health metrics
-      const greenness = avgGreen / (avgRed + avgGreen + avgBlue);
-      const healthScore = Math.round(greenness * 100);
-
-      // Determine issues based on color analysis
-      const issues = this.determineIssues(avgRed, avgGreen, avgBlue);
-      const recommendations = this.generateRecommendations(issues);
-
-      return {
-        healthScore,
-        issues,
-        recommendations
+        },
+        healthAssessment: {
+          overallHealth: 85,
+          issues: [],
+          recommendations: [
+            'Consider fertilizing during the growing season',
+            'Maintain current watering schedule',
+            'Plant is thriving in current light conditions'
+          ],
+          vitalSigns: {
+            leafColor: 'Healthy deep green',
+            soilMoisture: 'Optimal',
+            pestStatus: 'No signs of pests',
+            diseaseStatus: 'No visible diseases'
+          }
+        },
+        careInfo: {
+          watering: 'Water every 2-3 weeks, allowing soil to dry between waterings',
+          sunlight: 'Tolerates low light to bright indirect light',
+          soil: 'Well-draining potting mix',
+          temperature: '70-90°F (21-32°C)',
+          humidity: 'Tolerates low humidity',
+          fertilizer: 'Feed with balanced fertilizer every 6 months',
+          pruning: 'Remove damaged leaves at base',
+          repotting: 'Repot every 2-3 years or when root-bound'
+        }
       };
+
+      return mockData;
     } catch (error) {
-      console.error('Health analysis error:', error);
-      return {
-        healthScore: 0,
-        issues: ['Unable to analyze plant health'],
-        recommendations: ['Please try again with a clearer image']
-      };
+      console.error('Error in analyzeImage:', error);
+      throw error;
     }
-  }
-
-  determineIssues(red, green, blue) {
-    const issues = [];
-    const yellowThreshold = 200;
-    const brownThreshold = 150;
-
-    if (red > yellowThreshold && green > yellowThreshold && blue < yellowThreshold) {
-      issues.push(this.issuesDatabase.yellowLeaves);
-    }
-
-    if (red > brownThreshold && green < brownThreshold && blue < brownThreshold) {
-      issues.push(this.issuesDatabase.brownSpots);
-    }
-
-    if (green < 100) {
-      issues.push(this.issuesDatabase.wilting);
-    }
-
-    return issues;
-  }
-
-  generateRecommendations(issues) {
-    const recommendations = [];
-    issues.forEach(issue => {
-      recommendations.push(...issue.solutions);
-    });
-    return recommendations;
-  }
-
-  determineOptimalConditions(plantName) {
-    // Default conditions if specific plant not found
-    return {
-      water: 'Regular watering, keep soil moist but not waterlogged',
-      sunlight: 'Moderate to bright indirect light',
-      temperature: '65-80°F (18-27°C)',
-      humidity: '40-60%',
-      soil: 'Well-draining potting mix',
-      fertilizer: 'Balanced fertilizer every 2-4 weeks during growing season'
-    };
   }
 }
 
