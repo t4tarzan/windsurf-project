@@ -22,7 +22,7 @@ import { Link } from 'react-router-dom';
 // Feature card images (you would save these images in your assets folder)
 const featureImages = {
   'Plant Analysis': 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=400&h=300&q=80',
-  'Farming Tools': 'https://images.unsplash.com/photo-1592991538534-788285176b55?w=400&h=300&q=80',
+  'Farming Tools': 'https://images.unsplash.com/photo-1592150621744-aca64f48394a?w=400&h=300&q=80',
   'Track Progress': 'https://images.unsplash.com/photo-1495908333425-29a1e0918c5f?w=400&h=300&q=80',
   'Community & Blog': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&q=80',
 };
