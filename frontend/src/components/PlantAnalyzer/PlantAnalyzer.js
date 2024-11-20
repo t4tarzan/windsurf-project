@@ -168,26 +168,34 @@ const PlantAnalyzer = () => {
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>
-              {result.plantType}
+              {result.name || 'Unknown Plant'}
             </Typography>
-            <Typography color="textSecondary" gutterBottom>
-              {result.commonNames?.join(', ')}
-            </Typography>
+            {result.scientificName && (
+              <Typography color="textSecondary" gutterBottom>
+                Scientific Name: {result.scientificName}
+              </Typography>
+            )}
             <Typography variant="body2" paragraph>
-              {result.description}
+              {result.description || 'No description available for this plant.'}
             </Typography>
-            <Box sx={{ mt: 1 }}>
-              <Chip
-                icon={<ScienceIcon />}
-                label={`Family: ${result.family}`}
-                sx={{ mr: 1, mb: 1 }}
-              />
-              <Chip
-                icon={<EcoIcon />}
-                label={`Genus: ${result.genus}`}
-                sx={{ mr: 1, mb: 1 }}
-              />
-            </Box>
+            {(result.family || result.genus) && (
+              <Box sx={{ mt: 1 }}>
+                {result.family && (
+                  <Chip
+                    icon={<ScienceIcon />}
+                    label={`Family: ${result.family}`}
+                    sx={{ mr: 1, mb: 1 }}
+                  />
+                )}
+                {result.genus && (
+                  <Chip
+                    icon={<EcoIcon />}
+                    label={`Genus: ${result.genus}`}
+                    sx={{ mr: 1, mb: 1 }}
+                  />
+                )}
+              </Box>
+            )}
           </Grid>
           <Grid item xs={12} md={6}>
             {result.detailedInfo?.nativeTo && result.detailedInfo.nativeTo.length > 0 && (
@@ -364,47 +372,59 @@ const PlantAnalyzer = () => {
     </Card>
   );
 
-  const renderUsesAndBenefits = () => (
-    <Accordion>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography variant="h6">Uses and Benefits</Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Grid container spacing={2}>
-          {result.uses?.medicinal && (
-            <Grid item xs={12} sm={6}>
-              <Typography variant="subtitle1" gutterBottom>
-                <MedicinalIcon sx={{ mr: 1 }} />
-                Medicinal Uses
-              </Typography>
-              <List dense>
-                {result.uses.medicinalUses?.map((use, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={use} />
-                  </ListItem>
-                ))}
-              </List>
-            </Grid>
+  const renderUsesAndBenefits = () => {
+    // Only render if we have uses data
+    if (!result.uses?.medicinal && (!result.uses?.otherUses || result.uses.otherUses.length === 0)) {
+      return null;
+    }
+
+    return (
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Uses and Benefits</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Grid container spacing={2}>
+            {result.uses?.medicinal && result.uses.medicinalUses?.length > 0 && (
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle1" gutterBottom>
+                  <MedicinalIcon sx={{ mr: 1 }} />
+                  Medicinal Uses
+                </Typography>
+                <List dense>
+                  {result.uses.medicinalUses.map((use, index) => (
+                    <ListItem key={index}>
+                      <ListItemText primary={use} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Grid>
+            )}
+            {result.uses?.otherUses && result.uses.otherUses.length > 0 && (
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle1" gutterBottom>
+                  <EcoIcon sx={{ mr: 1 }} />
+                  Other Uses
+                </Typography>
+                <List dense>
+                  {result.uses.otherUses.map((use, index) => (
+                    <ListItem key={index}>
+                      <ListItemText primary={use} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Grid>
+            )}
+          </Grid>
+          {(!result.uses?.medicinal && (!result.uses?.otherUses || result.uses.otherUses.length === 0)) && (
+            <Typography variant="body2" color="text.secondary">
+              No uses or benefits information available for this plant.
+            </Typography>
           )}
-          {result.uses?.otherUses && result.uses.otherUses.length > 0 && (
-            <Grid item xs={12} sm={6}>
-              <Typography variant="subtitle1" gutterBottom>
-                <EcoIcon sx={{ mr: 1 }} />
-                Other Uses
-              </Typography>
-              <List dense>
-                {result.uses.otherUses.map((use, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={use} />
-                  </ListItem>
-                ))}
-              </List>
-            </Grid>
-          )}
-        </Grid>
-      </AccordionDetails>
-    </Accordion>
-  );
+        </AccordionDetails>
+      </Accordion>
+    );
+  };
 
   const renderTrivia = () => (
     <Accordion>
@@ -529,10 +549,10 @@ const PlantAnalyzer = () => {
               </Box>
               
               {renderBasicInfo()}
-              {renderCareInfo()}
-              {renderSeasonalInfo()}
+              {result.careInfo && renderCareInfo()}
+              {result.seasonalInfo && renderSeasonalInfo()}
               {renderUsesAndBenefits()}
-              {renderTrivia()}
+              {result.trivia?.length > 0 && renderTrivia()}
 
               <Box sx={{ mt: 3, textAlign: 'center' }}>
                 <Button

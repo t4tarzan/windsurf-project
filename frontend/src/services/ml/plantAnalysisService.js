@@ -95,11 +95,13 @@ class PlantAnalysisService {
         name: plantName,
         scientificName: this.generateScientificName(plantName),
         confidence: Math.round(topPrediction.probability * 100),
+        description: this.getPlantDescription(plantName),
         healthAssessment,
         careInfo: this.getCareTips(plantName),
         seasonalInfo: this.getSeasonalInfo(plantName),
         commonIssues: this.getCommonIssues(),
-        recommendations: this.getRecommendations(plantName)
+        uses: this.getPlantUses(plantName),
+        trivia: this.getPlantTrivia(plantName)
       };
     } catch (error) {
       console.error('Error analyzing image:', error);
@@ -348,6 +350,80 @@ class PlantAnalysisService {
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
+  }
+
+  getPlantDescription(plantName) {
+    const plantType = plantName.toLowerCase();
+    
+    if (plantType.includes('succulent') || plantType.includes('cactus')) {
+      return 'A drought-resistant plant known for its water-storing capabilities and unique appearance.';
+    }
+    
+    if (plantType.includes('fern')) {
+      return 'A non-flowering plant that reproduces via spores and typically prefers shaded, humid environments.';
+    }
+    
+    if (plantType.includes('orchid')) {
+      return 'A diverse flowering plant family known for its beautiful and often fragrant blooms.';
+    }
+    
+    if (plantType.includes('palm')) {
+      return 'A tropical or subtropical plant characterized by its large, evergreen fronds.';
+    }
+    
+    return 'A plant species that requires proper care and attention to thrive in its environment.';
+  }
+
+  getPlantUses(plantName) {
+    const plantType = plantName.toLowerCase();
+    const uses = {
+      medicinal: false,
+      medicinalUses: [],
+      otherUses: []
+    };
+
+    if (plantType.includes('aloe')) {
+      uses.medicinal = true;
+      uses.medicinalUses = ['Skin healing', 'Burn treatment', 'Anti-inflammatory'];
+      uses.otherUses = ['Natural skincare', 'Decorative purposes'];
+    } else if (plantType.includes('lavender')) {
+      uses.medicinal = true;
+      uses.medicinalUses = ['Aromatherapy', 'Stress relief', 'Sleep aid'];
+      uses.otherUses = ['Essential oils', 'Fragrance'];
+    } else if (plantType.includes('mint')) {
+      uses.medicinal = true;
+      uses.medicinalUses = ['Digestive aid', 'Breath freshening'];
+      uses.otherUses = ['Culinary herb', 'Tea preparation'];
+    }
+
+    return uses;
+  }
+
+  getPlantTrivia(plantName) {
+    const plantType = plantName.toLowerCase();
+    const trivia = [];
+
+    if (plantType.includes('succulent') || plantType.includes('cactus')) {
+      trivia.push(
+        'Some succulents can survive for months without water',
+        'Many species can propagate from a single leaf',
+        'They are found on every continent except Antarctica'
+      );
+    } else if (plantType.includes('fern')) {
+      trivia.push(
+        'Ferns have existed for over 350 million years',
+        'They reproduce through spores rather than seeds',
+        'Some species can filter pollutants from the air'
+      );
+    } else if (plantType.includes('orchid')) {
+      trivia.push(
+        'Orchids are one of the largest families of flowering plants',
+        'Some species can live for over 100 years',
+        'Vanilla comes from a type of orchid'
+      );
+    }
+
+    return trivia;
   }
 }
 
