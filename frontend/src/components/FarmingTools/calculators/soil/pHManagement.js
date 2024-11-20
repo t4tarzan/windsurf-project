@@ -195,7 +195,7 @@ const PHManagement = () => {
         <Alert severity="info" sx={{ mb: 4 }}>
           <Typography variant="body2">
             <strong>Pro Tip:</strong> Always perform a soil test before making major pH adjustments. Apply amendments gradually 
-            and retest after each application. It's better to make several small adjustments than one large correction.
+            and retest after each application. It&apos;s better to make several small adjustments than one large correction.
           </Typography>
         </Alert>
       </Box>

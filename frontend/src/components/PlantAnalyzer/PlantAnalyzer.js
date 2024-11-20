@@ -439,7 +439,7 @@ const PlantAnalyzer = () => {
           Plant Health Analyzer
         </Typography>
         <Typography variant="body1" align="center" paragraph>
-          Upload a photo or use your camera to analyze your plant's health
+          Let&apos;s analyze your plant&apos;s health and provide personalized care recommendations
         </Typography>
 
         <Paper elevation={3} sx={{ p: 2 }}>
