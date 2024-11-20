@@ -17,6 +17,13 @@ class PlantAnalysisService {
     // Initialize the model
     this.initModel();
 
+    // Enhanced logging for debugging
+    console.log('Environment Variables Status:');
+    console.log('- NODE_ENV:', process.env.NODE_ENV);
+    console.log('- Plant.id API key:', this.plantIdApiKey ? '✓ Set' : '✗ Missing');
+    console.log('- PlantNet API key:', this.plantnetApiKey ? '✓ Set' : '✗ Missing');
+    console.log('- Trefle API key:', this.trefleApiKey ? '✓ Set' : '✗ Missing');
+
     // Log API key status
     console.log('Plant.id API key status:', this.plantIdApiKey ? 'Set' : 'Not set');
   }
