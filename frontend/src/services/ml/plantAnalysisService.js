@@ -1,3 +1,4 @@
+// Plant Analysis Service - Updated for redeployment
 import axios from 'axios';
 import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
