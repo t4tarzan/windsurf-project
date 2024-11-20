@@ -1,18 +1,24 @@
 import axios from 'axios';
 import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
+import storageService from '../firebase/storageService';
 
 class PlantAnalysisService {
   constructor() {
     this.model = null;
     this.modelLoading = null;
+    this.plantIdApiKey = process.env.REACT_APP_PLANTID_API_KEY;
     this.plantnetApiKey = process.env.REACT_APP_PLANTNET_API_KEY;
     this.trefleApiKey = process.env.REACT_APP_TREFLE_API_KEY;
     this.lastRequestTime = 0;
     this.minRequestInterval = 1000;
+    this.baseUrl = 'https://api.plant.id/v2';
     
     // Initialize the model
     this.initModel();
+
+    // Log API key status
+    console.log('Plant.id API key status:', this.plantIdApiKey ? 'Set' : 'Not set');
   }
 
   async initModel() {
@@ -30,83 +36,331 @@ class PlantAnalysisService {
     return this.model;
   }
 
-  async analyzeImage(imageFile) {
+  async identifyWithPlantId(imageFile) {
     try {
-      // Ensure model is loaded
-      if (!this.model) {
-        await this.initModel();
-        if (!this.model) {
-          throw new Error('Failed to initialize image analysis model');
-        }
+      // First, try to get cached results from Firebase
+      const imageInfo = await storageService.uploadImage(imageFile);
+      const existingAnalysis = await storageService.getExistingAnalysis(imageInfo.url);
+
+      if (existingAnalysis) {
+        console.log('Found cached analysis results');
+        return existingAnalysis.results;
       }
 
-      // Create an HTML image element from the file
-      const img = new Image();
-      const imageUrl = URL.createObjectURL(imageFile);
-      
-      const predictions = await new Promise((resolve, reject) => {
-        img.onload = async () => {
-          try {
-            // Convert image to tensor
-            const tfImg = tf.browser.fromPixels(img);
-            // Ensure the image tensor is valid
-            if (!tfImg || tfImg.shape.length !== 3) {
-              throw new Error('Invalid image format');
-            }
-            
-            // Make predictions using MobileNet
-            const predictions = await this.model.classify(tfImg);
-            tfImg.dispose(); // Clean up tensor
-            resolve(predictions);
-          } catch (error) {
-            console.error('Error during image classification:', error);
-            reject(error);
-          }
-        };
-        img.onerror = () => reject(new Error('Failed to load image'));
-        img.src = imageUrl;
+      console.log('Starting Plant.id identification process...', { imageFile });
+
+      // Convert image to base64
+      const base64Image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
       });
 
-      // Clean up the object URL
-      URL.revokeObjectURL(imageUrl);
+      console.log('Image converted to base64');
 
-      // Process the predictions to identify plant-related items
-      const plantPredictions = predictions.filter(p => 
-        p.className.toLowerCase().includes('plant') ||
-        p.className.toLowerCase().includes('flower') ||
-        p.className.toLowerCase().includes('tree') ||
-        p.className.toLowerCase().includes('leaf')
+      const data = {
+        api_key: this.plantIdApiKey,
+        images: [base64Image],
+        modifiers: ["crops_fast", "similar_images", "health_all"],
+        plant_language: "en",
+        plant_details: [
+          "common_names",
+          "url",
+          "wiki_description",
+          "taxonomy",
+          "rank",
+          "gbif_id",
+          "inaturalist_id",
+          "image",
+          "synonyms",
+          "edible_parts",
+          "watering",
+          "propagation_methods",
+          "growth_rate",
+          "toxicity",
+          "scientific_name",
+          "structured_name",
+          "care_difficulty"
+        ],
+        disease_details: [
+          "common_names",
+          "url",
+          "description",
+          "treatment",
+          "classification",
+          "cause",
+          "symptoms"
+        ]
+      };
+
+      console.log('Making identification request to Plant.id API...');
+      
+      const response = await axios.post(
+        `${this.baseUrl}/identify`,
+        data,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
-      if (plantPredictions.length === 0) {
-        return {
-          error: 'No plants detected in the image. Please upload a clear image of a plant.'
-        };
+      console.log('Plant.id API response:', response.data);
+
+      if (!response.data.suggestions || response.data.suggestions.length === 0) {
+        console.error('No suggestions returned from Plant.id');
+        throw new Error('No plants identified by Plant.id');
       }
 
-      // Get the most likely plant prediction
-      const topPrediction = plantPredictions[0];
-      const plantName = this.formatPlantName(topPrediction.className);
-
-      // Generate analysis result
-      const healthAssessment = await this.assessPlantHealth(img);
+      const bestMatch = response.data.suggestions[0];
+      const healthAssessment = response.data.health_assessment || {};
       
+      // Process plant details
+      const plantDetails = bestMatch.plant_details || {};
+      const careInfo = {
+        watering: plantDetails.watering?.value,
+        propagation: plantDetails.propagation_methods,
+        growthRate: plantDetails.growth_rate,
+        toxicity: plantDetails.toxicity,
+        difficulty: plantDetails.care_difficulty
+      };
+
+      // Process health assessment
+      const diseases = healthAssessment.diseases || [];
+      const processedDiseases = diseases.map(disease => ({
+        name: disease.name,
+        probability: disease.probability,
+        details: disease.disease_details ? {
+          commonNames: disease.disease_details.common_names,
+          description: disease.disease_details.description,
+          treatment: disease.disease_details.treatment,
+          cause: disease.disease_details.cause,
+          symptoms: disease.disease_details.symptoms
+        } : null
+      }));
+
+      const result = {
+        name: bestMatch.plant_name,
+        scientificName: plantDetails.scientific_name,
+        confidence: Math.round(bestMatch.probability * 100),
+        description: plantDetails.wiki_description?.value,
+        taxonomy: plantDetails.taxonomy,
+        structuredName: plantDetails.structured_name,
+        commonNames: plantDetails.common_names,
+        synonyms: plantDetails.synonyms,
+        gbifId: plantDetails.gbif_id,
+        inaturalistId: plantDetails.inaturalist_id,
+        imageUrl: plantDetails.image?.value,
+        careInfo: this.cleanObject(careInfo),
+        health: this.cleanObject({
+          isHealthy: healthAssessment.is_healthy,
+          isHealthyProbability: healthAssessment.is_healthy_probability,
+          diseases: processedDiseases,
+          diseases_simple: diseases.map(d => d.name)
+        }),
+        edibleParts: plantDetails.edible_parts,
+        wikiUrl: plantDetails.url,
+        similarImages: bestMatch.similar_images || []
+      };
+
+      // Clean the entire result object
+      const cleanedResult = this.cleanObject(result);
+      console.log('Cleaned result:', cleanedResult);
+      
+      // Cache the results in Firebase
+      await storageService.saveAnalysisResult(imageInfo, cleanedResult);
+
+      return cleanedResult;
+
+    } catch (error) {
+      console.error('Error in Plant.id API:', error);
+      if (error.response) {
+        console.error('API error response:', {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        });
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error setting up request:', error.message);
+      }
+      throw error;
+    }
+  }
+
+  async identifyWithPlantNet(imageFile) {
+    try {
+      // Log API key (only first few characters for security)
+      const apiKeyPreview = this.plantnetApiKey ? `${this.plantnetApiKey.substring(0, 5)}...` : 'not set';
+      console.log('Using Pl@ntNet API key:', apiKeyPreview);
+
+      const formData = new FormData();
+      formData.append('images', imageFile);
+      
+      const response = await axios.post(
+        'https://my-api.plantnet.org/v2/identify/all',
+        formData,
+        {
+          params: {
+            'api-key': this.plantnetApiKey,
+            'include-related-images': true
+          }
+        }
+      );
+
+      if (!response.data?.results?.length) {
+        throw new Error('No plants identified by Pl@ntNet');
+      }
+
+      const bestMatch = response.data.results[0];
       return {
-        name: plantName,
-        scientificName: this.generateScientificName(plantName),
-        confidence: Math.round(topPrediction.probability * 100),
-        description: this.getPlantDescription(plantName),
-        healthAssessment,
-        careInfo: this.getCareTips(plantName),
-        seasonalInfo: this.getSeasonalInfo(plantName),
-        commonIssues: this.getCommonIssues(),
-        uses: this.getPlantUses(plantName),
-        trivia: this.getPlantTrivia(plantName)
+        name: bestMatch.species.commonNames?.[0] || bestMatch.species.scientificNameWithoutAuthor,
+        scientificName: bestMatch.species.scientificNameWithoutAuthor,
+        confidence: Math.round(bestMatch.score * 100),
+        taxonomy: {
+          family: bestMatch.species.family.scientificNameWithoutAuthor,
+          genus: bestMatch.species.genus.scientificNameWithoutAuthor
+        },
+        similarImages: bestMatch.images?.slice(0, 3).map(img => img.url) || []
       };
     } catch (error) {
-      console.error('Error analyzing image:', error);
-      throw new Error('Failed to analyze image. Please try again.');
+      // Enhanced error logging
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Pl@ntNet API error response:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Pl@ntNet API no response:', error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Pl@ntNet API error setup:', error.message);
+      }
+      throw error;
     }
+  }
+
+  async analyzeImage(image) {
+    try {
+      console.log('Starting plant analysis...');
+      
+      // First, try to get cached results
+      const imageInfo = await storageService.uploadImage(image);
+      const existingAnalysis = await storageService.getExistingAnalysis(imageInfo.url);
+
+      if (existingAnalysis) {
+        console.log('Found cached analysis results');
+        return existingAnalysis;
+      }
+
+      const results = {
+        imageUrl: imageInfo.url,
+        timestamp: new Date().toISOString(),
+        methods: []
+      };
+
+      // Try Plant.id API first
+      try {
+        console.log('Attempting Plant.id identification...');
+        const plantIdResult = await this.identifyWithPlantId(image);
+        if (plantIdResult) {
+          results.plantId = plantIdResult;
+          results.methods.push('plantId');
+          console.log('Plant.id identification successful');
+          // If Plant.id succeeds, we can return early as it's our most reliable source
+          const cleanedResults = this.cleanObject(results);
+          await storageService.saveAnalysisResult(imageInfo, cleanedResults);
+          return cleanedResults;
+        }
+      } catch (plantIdError) {
+        console.error('Plant.id error:', plantIdError);
+      }
+
+      // Try MobileNet as fallback
+      try {
+        console.log('Attempting MobileNet identification...');
+        if (!this.model) {
+          await this.initModel();
+        }
+        
+        const img = new Image();
+        
+        const predictions = await new Promise((resolve, reject) => {
+          img.onload = async () => {
+            try {
+              const tfImg = tf.browser.fromPixels(img);
+              const predictions = await this.model.classify(tfImg);
+              tfImg.dispose();
+              resolve(predictions);
+            } catch (err) {
+              reject(err);
+            }
+          };
+          img.onerror = () => reject(new Error('Failed to load image'));
+          img.src = URL.createObjectURL(image);
+        });
+
+        if (predictions && predictions.length > 0) {
+          results.mobilenet = {
+            name: this.formatPlantName(predictions[0].className),
+            confidence: Math.round(predictions[0].probability * 100),
+            predictions: predictions.map(p => ({
+              name: this.formatPlantName(p.className),
+              confidence: Math.round(p.probability * 100)
+            }))
+          };
+          results.methods.push('mobilenet');
+          console.log('MobileNet identification successful');
+        }
+      } catch (mobileNetError) {
+        console.error('MobileNet error:', mobileNetError);
+      }
+
+      // Check if we have any results
+      if (results.methods.length === 0) {
+        throw new Error('Unable to identify plant with any available method');
+      }
+
+      // Clean and save results
+      const cleanedResults = this.cleanObject(results);
+      await storageService.saveAnalysisResult(imageInfo, cleanedResults);
+      return cleanedResults;
+
+    } catch (error) {
+      console.error('Error in analyzeImage:', error);
+      throw error;
+    }
+  }
+
+  // Helper function to clean object of undefined values and nulls
+  cleanObject(obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.cleanObject(item)).filter(item => item != null);
+    }
+    
+    const cleanedObj = {};
+    Object.entries(obj).forEach(([key, value]) => {
+      if (value != null) {
+        if (typeof value === 'object') {
+          const cleaned = this.cleanObject(value);
+          if (cleaned != null && Object.keys(cleaned).length > 0) {
+            cleanedObj[key] = cleaned;
+          }
+        } else {
+          cleanedObj[key] = value;
+        }
+      }
+    });
+    
+    return Object.keys(cleanedObj).length > 0 ? cleanedObj : null;
   }
 
   formatPlantName(className) {
@@ -370,6 +624,26 @@ class PlantAnalysisService {
     if (plantType.includes('palm')) {
       return 'A tropical or subtropical plant characterized by its large, evergreen fronds.';
     }
+
+    if (plantType.includes('monstera')) {
+      return 'A tropical climbing plant known for its large, perforated leaves and aerial roots. Popular as a striking indoor plant.';
+    }
+
+    if (plantType.includes('pothos')) {
+      return 'A versatile trailing plant with heart-shaped leaves, known for being one of the easiest houseplants to grow and maintain.';
+    }
+
+    if (plantType.includes('philodendron')) {
+      return 'A diverse genus of flowering plants known for their beautiful foliage and adaptability to indoor conditions.';
+    }
+
+    if (plantType.includes('rose')) {
+      return 'A woody perennial flowering plant known for its beautiful, often fragrant flowers and prickly stems.';
+    }
+
+    if (plantType.includes('lily')) {
+      return 'A flowering plant admired for its large, showy blooms and often pleasant fragrance.';
+    }
     
     return 'A plant species that requires proper care and attention to thrive in its environment.';
   }
@@ -394,6 +668,20 @@ class PlantAnalysisService {
       uses.medicinal = true;
       uses.medicinalUses = ['Digestive aid', 'Breath freshening'];
       uses.otherUses = ['Culinary herb', 'Tea preparation'];
+    } else if (plantType.includes('monstera')) {
+      uses.otherUses = ['Air purification', 'Interior decoration', 'Tropical aesthetics'];
+    } else if (plantType.includes('pothos')) {
+      uses.otherUses = ['Air purification', 'Interior decoration', 'Low-light spaces'];
+    } else if (plantType.includes('philodendron')) {
+      uses.otherUses = ['Air purification', 'Interior decoration', 'Space divider'];
+    } else if (plantType.includes('rose')) {
+      uses.medicinal = true;
+      uses.medicinalUses = ['Aromatherapy', 'Skin care'];
+      uses.otherUses = ['Fragrance', 'Cut flowers', 'Garden decoration'];
+    } else if (plantType.includes('lily')) {
+      uses.otherUses = ['Cut flowers', 'Garden decoration', 'Fragrance'];
+    } else {
+      uses.otherUses = ['Decorative purposes', 'Air purification'];
     }
 
     return uses;

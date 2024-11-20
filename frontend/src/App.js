@@ -13,6 +13,7 @@ import Home from './components/Home';
 import PlaceholderPage from './components/PlaceholderPage';
 import PlantAnalyzer from './components/PlantAnalyzer/PlantAnalyzer';
 import FarmingTools from './components/FarmingTools/FarmingTools';
+import TestFirebase from './components/TestFirebase/TestFirebase';
 
 // Create a theme instance
 const theme = createTheme({
@@ -92,6 +93,7 @@ function App() {
               path="/blog" 
               element={<PlaceholderPage {...placeholderContent.blog} />} 
             />
+            <Route path="/test-firebase" element={<TestFirebase />} />
           </Routes>
         </div>
       </Router>

@@ -7,6 +7,7 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.5.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.18",
@@ -15,8 +16,10 @@
     "@tensorflow-models/mobilenet": "^2.1.1",
     "@tensorflow/tfjs": "^4.15.0",
     "@tensorflow/tfjs-converter": "^4.15.0",
+    "antd": "^5.22.1",
     "axios": "^1.6.7",
     "date-fns": "^2.29.3",
+    "firebase": "^11.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.1",
