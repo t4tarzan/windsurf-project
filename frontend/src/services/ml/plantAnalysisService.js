@@ -5,6 +5,7 @@ import * as mobilenet from '@tensorflow-models/mobilenet';
 class PlantAnalysisService {
   constructor() {
     this.model = null;
+    this.modelLoading = null;
     this.plantnetApiKey = process.env.REACT_APP_PLANTNET_API_KEY;
     this.trefleApiKey = process.env.REACT_APP_TREFLE_API_KEY;
     this.lastRequestTime = 0;
@@ -15,17 +16,28 @@ class PlantAnalysisService {
   }
 
   async initModel() {
-    try {
-      this.model = await mobilenet.load();
-    } catch (error) {
-      console.error('Error loading MobileNet model:', error);
+    if (!this.model && !this.modelLoading) {
+      this.modelLoading = mobilenet.load();
+      try {
+        this.model = await this.modelLoading;
+        console.log('MobileNet model loaded successfully');
+      } catch (error) {
+        console.error('Error loading MobileNet model:', error);
+        this.model = null;
+      }
+      this.modelLoading = null;
     }
+    return this.model;
   }
 
   async analyzeImage(imageFile) {
     try {
+      // Ensure model is loaded
       if (!this.model) {
         await this.initModel();
+        if (!this.model) {
+          throw new Error('Failed to initialize image analysis model');
+        }
       }
 
       // Create an HTML image element from the file
@@ -35,12 +47,19 @@ class PlantAnalysisService {
       const predictions = await new Promise((resolve, reject) => {
         img.onload = async () => {
           try {
-            // Make predictions using MobileNet
+            // Convert image to tensor
             const tfImg = tf.browser.fromPixels(img);
+            // Ensure the image tensor is valid
+            if (!tfImg || tfImg.shape.length !== 3) {
+              throw new Error('Invalid image format');
+            }
+            
+            // Make predictions using MobileNet
             const predictions = await this.model.classify(tfImg);
             tfImg.dispose(); // Clean up tensor
             resolve(predictions);
           } catch (error) {
+            console.error('Error during image classification:', error);
             reject(error);
           }
         };
@@ -70,11 +89,13 @@ class PlantAnalysisService {
       const plantName = this.formatPlantName(topPrediction.className);
 
       // Generate analysis result
+      const healthAssessment = await this.assessPlantHealth(img);
+      
       return {
         name: plantName,
         scientificName: this.generateScientificName(plantName),
-        confidence: topPrediction.probability,
-        healthAssessment: await this.assessPlantHealth(img),
+        confidence: Math.round(topPrediction.probability * 100),
+        healthAssessment,
         careInfo: this.getCareTips(plantName),
         seasonalInfo: this.getSeasonalInfo(plantName),
         commonIssues: this.getCommonIssues(),
@@ -95,57 +116,70 @@ class PlantAnalysisService {
   }
 
   async assessPlantHealth(image) {
-    // Analyze color distribution for health assessment
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = image.width;
-    canvas.height = image.height;
-    ctx.drawImage(image, 0, 0);
-    
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    
-    let greenPixels = 0;
-    let yellowPixels = 0;
-    let brownPixels = 0;
-    let totalPixels = data.length / 4;
+    try {
+      // Create canvas and draw image
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = image.naturalWidth || image.width;
+      canvas.height = image.naturalHeight || image.height;
+      ctx.drawImage(image, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      let greenPixels = 0;
+      let yellowPixels = 0;
+      let brownPixels = 0;
+      let totalPixels = data.length / 4;
 
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
 
-      // Check for green pixels (healthy)
-      if (g > r + 20 && g > b + 20) {
-        greenPixels++;
+        // Improved color detection thresholds
+        if (g > Math.max(r, b) && g > 100) {
+          greenPixels++;
+        }
+        else if (r > 150 && g > 150 && b < 100) {
+          yellowPixels++;
+        }
+        else if (r > 100 && g < 150 && b < 100) {
+          brownPixels++;
+        }
       }
-      // Check for yellow pixels (potential issues)
-      else if (r > 150 && g > 150 && b < 100) {
-        yellowPixels++;
-      }
-      // Check for brown pixels (potential disease)
-      else if (r > 100 && g < 100 && b < 100) {
-        brownPixels++;
-      }
+
+      const greenPercentage = (greenPixels / totalPixels) * 100;
+      const yellowPercentage = (yellowPixels / totalPixels) * 100;
+      const brownPercentage = (brownPixels / totalPixels) * 100;
+
+      const overallHealth = Math.round(
+        Math.min(100, Math.max(0, 
+          greenPercentage - (yellowPercentage * 0.5 + brownPercentage)
+        ))
+      );
+
+      return {
+        overallHealth,
+        details: {
+          healthyTissue: Math.round(greenPercentage) + '%',
+          stressedTissue: Math.round(yellowPercentage) + '%',
+          damagedTissue: Math.round(brownPercentage) + '%'
+        },
+        issues: this.identifyHealthIssues(yellowPercentage, brownPercentage)
+      };
+    } catch (error) {
+      console.error('Error assessing plant health:', error);
+      return {
+        overallHealth: 0,
+        details: {
+          healthyTissue: '0%',
+          stressedTissue: '0%',
+          damagedTissue: '0%'
+        },
+        issues: []
+      };
     }
-
-    const greenPercentage = (greenPixels / totalPixels) * 100;
-    const yellowPercentage = (yellowPixels / totalPixels) * 100;
-    const brownPercentage = (brownPixels / totalPixels) * 100;
-
-    const overallHealth = Math.min(100, Math.max(0, 
-      greenPercentage - (yellowPercentage + brownPercentage)
-    ));
-
-    return {
-      overallHealth,
-      details: {
-        healthyTissue: greenPercentage.toFixed(1) + '%',
-        stressedTissue: yellowPercentage.toFixed(1) + '%',
-        damagedTissue: brownPercentage.toFixed(1) + '%'
-      },
-      issues: this.identifyHealthIssues(yellowPercentage, brownPercentage)
-    };
   }
 
   identifyHealthIssues(yellowPercentage, brownPercentage) {
@@ -181,7 +215,6 @@ class PlantAnalysisService {
   }
 
   getCareTips(plantName) {
-    // Customize care tips based on plant type
     const generalTips = {
       watering: 'Water when top inch of soil feels dry',
       sunlight: 'Moderate to bright indirect light',
@@ -191,21 +224,33 @@ class PlantAnalysisService {
       fertilizer: 'Monthly during growing season'
     };
 
-    // Add plant-specific modifications here
-    if (plantName.toLowerCase().includes('succulent')) {
+    const plantType = plantName.toLowerCase();
+    if (plantType.includes('succulent') || plantType.includes('cactus')) {
       return {
         ...generalTips,
         watering: 'Water sparingly, allow soil to dry completely',
-        humidity: 'Low humidity preferred'
+        humidity: 'Low humidity preferred',
+        soil: 'Fast-draining cactus/succulent mix'
       };
     }
 
-    if (plantName.toLowerCase().includes('fern')) {
+    if (plantType.includes('fern')) {
       return {
         ...generalTips,
         watering: 'Keep soil consistently moist',
-        humidity: 'High humidity required',
-        sunlight: 'Indirect light to partial shade'
+        humidity: 'High humidity required (60-80%)',
+        sunlight: 'Indirect light to partial shade',
+        soil: 'Rich, moisture-retaining potting mix'
+      };
+    }
+
+    if (plantType.includes('orchid')) {
+      return {
+        ...generalTips,
+        watering: 'Water thoroughly then allow to slightly dry',
+        humidity: 'High humidity (50-70%)',
+        soil: 'Specialized orchid mix',
+        fertilizer: 'Weak orchid fertilizer every 2-4 weeks'
       };
     }
 
@@ -213,13 +258,27 @@ class PlantAnalysisService {
   }
 
   getSeasonalInfo(plantName) {
-    return {
+    const plantType = plantName.toLowerCase();
+    const defaultInfo = {
       growingSeason: ['Spring', 'Summer'],
       floweringSeason: ['Summer'],
       dormancyPeriod: ['Winter'],
       pruningTime: ['Early Spring'],
       fertilizingSchedule: ['Spring', 'Summer']
     };
+
+    if (plantType.includes('succulent') || plantType.includes('cactus')) {
+      return {
+        ...defaultInfo,
+        growingSeason: ['Spring', 'Summer', 'Fall'],
+        floweringSeason: ['Late Spring', 'Summer'],
+        dormancyPeriod: ['Winter'],
+        pruningTime: ['Spring'],
+        fertilizingSchedule: ['Growing Season Only']
+      };
+    }
+
+    return defaultInfo;
   }
 
   getCommonIssues() {
@@ -233,21 +292,58 @@ class PlantAnalysisService {
         name: 'Brown Leaf Tips',
         causes: ['Low humidity', 'Water quality issues', 'Over-fertilization'],
         solutions: ['Increase humidity', 'Use filtered water', 'Reduce fertilizer']
+      },
+      {
+        name: 'Wilting',
+        causes: ['Underwatering', 'Root problems', 'Temperature stress'],
+        solutions: ['Check soil moisture', 'Inspect roots', 'Adjust environment']
       }
     ];
   }
 
   getRecommendations(plantName) {
-    return [
+    const plantType = plantName.toLowerCase();
+    const baseRecommendations = [
       'Monitor soil moisture regularly',
       'Rotate plant periodically for even growth',
       'Clean leaves monthly to remove dust',
       'Watch for signs of pest infestation'
     ];
+
+    if (plantType.includes('succulent') || plantType.includes('cactus')) {
+      return [
+        'Ensure excellent drainage',
+        'Protect from frost',
+        'Provide bright, direct sunlight',
+        'Water only when soil is completely dry'
+      ];
+    }
+
+    if (plantType.includes('tropical')) {
+      return [
+        ...baseRecommendations,
+        'Maintain high humidity',
+        'Keep away from cold drafts',
+        'Consider using a humidity tray'
+      ];
+    }
+
+    return baseRecommendations;
   }
 
   generateScientificName(commonName) {
     // This is a placeholder. In a real application, you would use a plant database API
+    const words = commonName.toLowerCase().split(' ');
+    if (words.length >= 2) {
+      return words
+        .slice(0, 2)
+        .map((word, index) => 
+          index === 0 
+            ? word.charAt(0).toUpperCase() + word.slice(1)
+            : word
+        )
+        .join(' ');
+    }
     return commonName
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
