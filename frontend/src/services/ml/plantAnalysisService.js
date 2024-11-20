@@ -1,149 +1,257 @@
 import axios from 'axios';
+import * as tf from '@tensorflow/tfjs';
+import * as mobilenet from '@tensorflow-models/mobilenet';
 
 class PlantAnalysisService {
   constructor() {
+    this.model = null;
     this.plantnetApiKey = process.env.REACT_APP_PLANTNET_API_KEY;
     this.trefleApiKey = process.env.REACT_APP_TREFLE_API_KEY;
-    
-    // Add rate limiting
     this.lastRequestTime = 0;
-    this.minRequestInterval = 1000; // 1 second between requests
+    this.minRequestInterval = 1000;
     
-    // Common plant issues database
-    this.issuesDatabase = {
-      yellowLeaves: {
-        name: 'Yellow Leaves',
-        description: 'Leaves turning yellow',
-        causes: ['Overwatering', 'Nutrient deficiency', 'Poor lighting'],
-        solutions: [
-          'Reduce watering frequency',
-          'Check soil nutrients',
-          'Adjust light exposure'
-        ]
-      },
-      brownSpots: {
-        name: 'Brown Spots',
-        description: 'Brown spots on leaves',
-        causes: ['Fungal infection', 'Sunburn', 'Mineral buildup'],
-        solutions: [
-          'Treat with fungicide',
-          'Provide shade',
-          'Flush soil with clean water'
-        ]
-      },
-      wilting: {
-        name: 'Wilting',
-        description: 'Plant appears droopy',
-        causes: ['Underwatering', 'Root problems', 'Temperature stress'],
-        solutions: [
-          'Increase watering',
-          'Check root health',
-          'Adjust environment temperature'
-        ]
+    // Initialize the model
+    this.initModel();
+  }
+
+  async initModel() {
+    try {
+      this.model = await mobilenet.load();
+    } catch (error) {
+      console.error('Error loading MobileNet model:', error);
+    }
+  }
+
+  async analyzeImage(imageFile) {
+    try {
+      if (!this.model) {
+        await this.initModel();
       }
+
+      // Create an HTML image element from the file
+      const img = new Image();
+      const imageUrl = URL.createObjectURL(imageFile);
+      
+      const predictions = await new Promise((resolve, reject) => {
+        img.onload = async () => {
+          try {
+            // Make predictions using MobileNet
+            const tfImg = tf.browser.fromPixels(img);
+            const predictions = await this.model.classify(tfImg);
+            tfImg.dispose(); // Clean up tensor
+            resolve(predictions);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = imageUrl;
+      });
+
+      // Clean up the object URL
+      URL.revokeObjectURL(imageUrl);
+
+      // Process the predictions to identify plant-related items
+      const plantPredictions = predictions.filter(p => 
+        p.className.toLowerCase().includes('plant') ||
+        p.className.toLowerCase().includes('flower') ||
+        p.className.toLowerCase().includes('tree') ||
+        p.className.toLowerCase().includes('leaf')
+      );
+
+      if (plantPredictions.length === 0) {
+        return {
+          error: 'No plants detected in the image. Please upload a clear image of a plant.'
+        };
+      }
+
+      // Get the most likely plant prediction
+      const topPrediction = plantPredictions[0];
+      const plantName = this.formatPlantName(topPrediction.className);
+
+      // Generate analysis result
+      return {
+        name: plantName,
+        scientificName: this.generateScientificName(plantName),
+        confidence: topPrediction.probability,
+        healthAssessment: await this.assessPlantHealth(img),
+        careInfo: this.getCareTips(plantName),
+        seasonalInfo: this.getSeasonalInfo(plantName),
+        commonIssues: this.getCommonIssues(),
+        recommendations: this.getRecommendations(plantName)
+      };
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      throw new Error('Failed to analyze image. Please try again.');
+    }
+  }
+
+  formatPlantName(className) {
+    return className
+      .split(',')[0]
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  async assessPlantHealth(image) {
+    // Analyze color distribution for health assessment
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    ctx.drawImage(image, 0, 0);
+    
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    let greenPixels = 0;
+    let yellowPixels = 0;
+    let brownPixels = 0;
+    let totalPixels = data.length / 4;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+
+      // Check for green pixels (healthy)
+      if (g > r + 20 && g > b + 20) {
+        greenPixels++;
+      }
+      // Check for yellow pixels (potential issues)
+      else if (r > 150 && g > 150 && b < 100) {
+        yellowPixels++;
+      }
+      // Check for brown pixels (potential disease)
+      else if (r > 100 && g < 100 && b < 100) {
+        brownPixels++;
+      }
+    }
+
+    const greenPercentage = (greenPixels / totalPixels) * 100;
+    const yellowPercentage = (yellowPixels / totalPixels) * 100;
+    const brownPercentage = (brownPixels / totalPixels) * 100;
+
+    const overallHealth = Math.min(100, Math.max(0, 
+      greenPercentage - (yellowPercentage + brownPercentage)
+    ));
+
+    return {
+      overallHealth,
+      details: {
+        healthyTissue: greenPercentage.toFixed(1) + '%',
+        stressedTissue: yellowPercentage.toFixed(1) + '%',
+        damagedTissue: brownPercentage.toFixed(1) + '%'
+      },
+      issues: this.identifyHealthIssues(yellowPercentage, brownPercentage)
     };
   }
 
-  async analyzeImage(imageData) {
-    try {
-      // For development, return mock data
-      const mockData = {
-        name: 'Snake Plant',
-        scientificName: 'Sansevieria trifasciata',
-        confidence: 0.95,
-        family: 'Asparagaceae',
-        genus: 'Sansevieria',
-        images: [
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg/1200px-Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg'
-        ],
-        additionalInfo: {
-          common_name: 'Snake Plant',
-          scientific_name: 'Sansevieria trifasciata',
-          family_common_name: 'Asparagus family',
-          observations: 'Common houseplant known for air purification'
-        },
-        detailedInfo: {
-          nativeTo: ['West Africa', 'Nigeria', 'Congo'],
-          growthHabit: 'Evergreen perennial',
-          lightRequirements: 'Low to bright indirect light',
-          wateringNeeds: 'Low, drought tolerant',
-          soilPreference: 'Well-draining potting mix',
-          idealTemperature: '70-90°F (21-32°C)',
-          propagationMethods: ['Division', 'Leaf cuttings'],
-          toxicity: 'Mildly toxic to pets if ingested',
-          edible: false,
-          uses: [
-            'Air purification',
-            'Indoor decoration',
-            'Low-maintenance houseplant'
-          ]
-        },
-        uses: {
-          medicinal: true,
-          medicinalUses: [
-            'Traditional medicine for treating coughs',
-            'Used in treatments for snake bites',
-            'Has antimicrobial properties'
-          ],
-          edibleUses: [],
-          otherUses: [
-            'Fiber production',
-            'Natural air purifier',
-            'Ornamental purposes'
-          ]
-        },
-        trivia: [
-          'Snake plants were named for the snake-like patterns on their leaves',
-          'NASA has studied snake plants for their air-purifying abilities',
-          'In some cultures, these plants are believed to bring good luck',
-          'They can survive in very low light conditions for weeks',
-          'The plant produces oxygen mainly at night, unlike most other plants'
-        ],
-        seasonalInfo: {
-          growingSeason: ['Spring', 'Summer'],
-          dormancyPeriod: ['Winter'],
-          floweringSeason: ['Late Spring', 'Early Summer'],
-          pruningTime: ['Spring'],
-          fertilizingSchedule: ['Spring', 'Summer'],
-          commonIssues: {
-            spring: ['New growth may be pale', 'Watch for increased watering needs'],
-            summer: ['Protect from direct sun', 'Monitor for pests'],
-            fall: ['Reduce watering', 'Prepare for dormancy'],
-            winter: ['Minimal watering needed', 'Protect from cold drafts']
-          }
-        },
-        healthAssessment: {
-          overallHealth: 85,
-          issues: [],
-          recommendations: [
-            'Consider fertilizing during the growing season',
-            'Maintain current watering schedule',
-            'Plant is thriving in current light conditions'
-          ],
-          vitalSigns: {
-            leafColor: 'Healthy deep green',
-            soilMoisture: 'Optimal',
-            pestStatus: 'No signs of pests',
-            diseaseStatus: 'No visible diseases'
-          }
-        },
-        careInfo: {
-          watering: 'Water every 2-3 weeks, allowing soil to dry between waterings',
-          sunlight: 'Tolerates low light to bright indirect light',
-          soil: 'Well-draining potting mix',
-          temperature: '70-90°F (21-32°C)',
-          humidity: 'Tolerates low humidity',
-          fertilizer: 'Feed with balanced fertilizer every 6 months',
-          pruning: 'Remove damaged leaves at base',
-          repotting: 'Repot every 2-3 years or when root-bound'
-        }
-      };
-
-      return mockData;
-    } catch (error) {
-      console.error('Error in analyzeImage:', error);
-      throw error;
+  identifyHealthIssues(yellowPercentage, brownPercentage) {
+    const issues = [];
+    
+    if (yellowPercentage > 20) {
+      issues.push({
+        type: 'Nutrient Deficiency',
+        severity: 'Moderate',
+        description: 'Yellowing leaves may indicate nutrient deficiencies',
+        solutions: [
+          'Check soil pH',
+          'Apply balanced fertilizer',
+          'Ensure proper watering'
+        ]
+      });
     }
+
+    if (brownPercentage > 15) {
+      issues.push({
+        type: 'Disease/Damage',
+        severity: 'High',
+        description: 'Brown spots or areas may indicate disease or damage',
+        solutions: [
+          'Remove affected leaves',
+          'Improve air circulation',
+          'Consider fungicide treatment'
+        ]
+      });
+    }
+
+    return issues;
+  }
+
+  getCareTips(plantName) {
+    // Customize care tips based on plant type
+    const generalTips = {
+      watering: 'Water when top inch of soil feels dry',
+      sunlight: 'Moderate to bright indirect light',
+      soil: 'Well-draining potting mix',
+      temperature: '65-80°F (18-27°C)',
+      humidity: 'Average household humidity',
+      fertilizer: 'Monthly during growing season'
+    };
+
+    // Add plant-specific modifications here
+    if (plantName.toLowerCase().includes('succulent')) {
+      return {
+        ...generalTips,
+        watering: 'Water sparingly, allow soil to dry completely',
+        humidity: 'Low humidity preferred'
+      };
+    }
+
+    if (plantName.toLowerCase().includes('fern')) {
+      return {
+        ...generalTips,
+        watering: 'Keep soil consistently moist',
+        humidity: 'High humidity required',
+        sunlight: 'Indirect light to partial shade'
+      };
+    }
+
+    return generalTips;
+  }
+
+  getSeasonalInfo(plantName) {
+    return {
+      growingSeason: ['Spring', 'Summer'],
+      floweringSeason: ['Summer'],
+      dormancyPeriod: ['Winter'],
+      pruningTime: ['Early Spring'],
+      fertilizingSchedule: ['Spring', 'Summer']
+    };
+  }
+
+  getCommonIssues() {
+    return [
+      {
+        name: 'Leaf Yellowing',
+        causes: ['Overwatering', 'Nutrient deficiency', 'Poor lighting'],
+        solutions: ['Adjust watering schedule', 'Check soil nutrients', 'Modify light exposure']
+      },
+      {
+        name: 'Brown Leaf Tips',
+        causes: ['Low humidity', 'Water quality issues', 'Over-fertilization'],
+        solutions: ['Increase humidity', 'Use filtered water', 'Reduce fertilizer']
+      }
+    ];
+  }
+
+  getRecommendations(plantName) {
+    return [
+      'Monitor soil moisture regularly',
+      'Rotate plant periodically for even growth',
+      'Clean leaves monthly to remove dust',
+      'Watch for signs of pest infestation'
+    ];
+  }
+
+  generateScientificName(commonName) {
+    // This is a placeholder. In a real application, you would use a plant database API
+    return commonName
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }
 
