@@ -131,24 +131,6 @@ function FeatureCard({ feature, loading }) {
 
 function Home() {
   const [loading, setLoading] = useState(false);
-  const [envStatus, setEnvStatus] = useState('');
-
-  // Test environment variables
-  const testEnvVariables = () => {
-    setLoading(true);
-    const plantnetKey = process.env.REACT_APP_PLANTNET_API_KEY;
-    const trefleKey = process.env.REACT_APP_TREFLE_API_KEY;
-    
-    setEnvStatus(`
-      PlantNet API Key: ${plantnetKey ? '✅ Present' : '❌ Missing'}
-      Trefle API Key: ${trefleKey ? '✅ Present' : '❌ Missing'}
-    `);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    testEnvVariables();
-  }, []);
 
   return (
     <Box>
@@ -176,11 +158,6 @@ function Home() {
           <Typography variant="subtitle1" sx={{ mb: 4 }}>
             Version 1.0.1 - Powered by Vercel
           </Typography>
-          {envStatus && (
-            <Typography variant="body2" sx={{ mb: 4, whiteSpace: 'pre-line' }}>
-              {envStatus}
-            </Typography>
-          )}
           <Button
             component={Link}
             to="/analyze"
