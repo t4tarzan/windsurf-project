@@ -34,6 +34,8 @@ import { db } from '../../config/firebase';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
+import remarkImages from 'remark-images';
 import rehypeRaw from 'rehype-raw';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -58,64 +60,122 @@ const TableOfContents = styled(Paper)(({ theme }) => ({
 }));
 
 const BlogContent = styled('div')(({ theme }) => ({
-  '& .blog-content': {
-    fontSize: '1.1rem',
-    lineHeight: 1.6,
-  },
-  '& h2': {
-    marginTop: theme.spacing(4),
-    marginBottom: theme.spacing(2),
-    fontSize: '1.8rem',
-  },
-  '& h3': {
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(1.5),
-    fontSize: '1.5rem',
-  },
-  '& p': {
-    marginBottom: theme.spacing(2),
-  },
-  '& ul, & ol': {
-    marginBottom: theme.spacing(2),
-    paddingLeft: theme.spacing(4),
-  },
-  '& li': {
-    marginBottom: theme.spacing(1),
-  },
-  '& blockquote': {
-    margin: theme.spacing(3, 0),
-    padding: theme.spacing(2, 4),
-    borderLeft: `4px solid ${theme.palette.primary.main}`,
-    backgroundColor: theme.palette.grey[50],
-    fontStyle: 'italic',
-  },
-  '& pre': {
-    margin: theme.spacing(3, 0),
-    padding: theme.spacing(2),
-    backgroundColor: theme.palette.grey[50],
-    borderRadius: theme.shape.borderRadius,
-    overflowX: 'auto',
-  },
   '& img': {
     maxWidth: '100%',
     height: 'auto',
-    margin: theme.spacing(3, 0),
     borderRadius: theme.shape.borderRadius,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   },
   '& table': {
     width: '100%',
-    margin: theme.spacing(3, 0),
     borderCollapse: 'collapse',
+    marginBottom: theme.spacing(2),
   },
   '& th, & td': {
-    padding: theme.spacing(1.5),
-    border: `1px solid ${theme.palette.grey[300]}`,
+    padding: theme.spacing(1),
+    borderBottom: `1px solid ${theme.palette.divider}`,
   },
   '& th': {
-    backgroundColor: theme.palette.grey[50],
+    backgroundColor: theme.palette.grey[100],
     fontWeight: 'bold',
   },
+  '& blockquote': {
+    borderLeft: `4px solid ${theme.palette.primary.main}`,
+    margin: theme.spacing(2, 0),
+    padding: theme.spacing(1, 2),
+    backgroundColor: theme.palette.grey[50],
+  },
+  '& pre': {
+    backgroundColor: theme.palette.grey[100],
+    padding: theme.spacing(2),
+    borderRadius: theme.shape.borderRadius,
+    overflowX: 'auto',
+  },
+  '& code': {
+    fontFamily: 'monospace',
+    backgroundColor: theme.palette.grey[100],
+    padding: theme.spacing(0.5),
+    borderRadius: theme.shape.borderRadius,
+  },
 }));
+
+const MarkdownImage = React.memo(function MarkdownImage({ alt, src }) {
+  const [imageUrl, setImageUrl] = useState(null);
+  const description = alt || src;
+  const UNSPLASH_ACCESS_KEY = process.env.REACT_APP_UNSPLASH_ACCESS_KEY;
+
+  const fetchUnsplashImage = async (description) => {
+    try {
+      const response = await axios.get(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(description)}&per_page=1`,
+        {
+          headers: {
+            Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`
+          }
+        }
+      );
+
+      if (response.data.results && response.data.results.length > 0) {
+        return response.data.results[0].urls.regular;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching image:', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const loadImage = async () => {
+      const url = await fetchUnsplashImage(description);
+      if (url) {
+        setImageUrl(url);
+      }
+    };
+    loadImage();
+  }, [description]);
+
+  const imageStyles = {
+    width: '100%',
+    maxHeight: 400,
+    objectFit: 'cover',
+    my: 2,
+    borderRadius: 1,
+    display: 'block'
+  };
+
+  if (!imageUrl) {
+    return (
+      <img
+        alt={description}
+        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        style={{ 
+          width: '100%',
+          height: '200px',
+          backgroundColor: '#f5f5f5',
+          borderRadius: '4px',
+          margin: '16px 0'
+        }}
+      />
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt={description}
+      style={{
+        width: '100%',
+        maxHeight: '400px',
+        objectFit: 'cover',
+        margin: '16px 0',
+        borderRadius: '4px'
+      }}
+      loading="lazy"
+    />
+  );
+});
 
 const BlogPost = () => {
   const { id } = useParams();
@@ -126,6 +186,36 @@ const BlogPost = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [imageCache, setImageCache] = useState({});
+
+  const UNSPLASH_ACCESS_KEY = process.env.REACT_APP_UNSPLASH_ACCESS_KEY;
+
+  const fetchUnsplashImage = async (description) => {
+    if (imageCache[description]) {
+      return imageCache[description];
+    }
+
+    try {
+      const response = await axios.get(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(description)}&per_page=1`,
+        {
+          headers: {
+            Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`
+          }
+        }
+      );
+
+      if (response.data.results && response.data.results.length > 0) {
+        const imageUrl = response.data.results[0].urls.regular;
+        setImageCache(prev => ({ ...prev, [description]: imageUrl }));
+        return imageUrl;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching image:', error);
+      return null;
+    }
+  };
 
   // Add backend URL from environment variables
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
@@ -141,10 +231,24 @@ const BlogPost = () => {
       
       if (docSnap.exists()) {
         const postData = docSnap.data();
+        
+        // Check if content is already generated and valid
+        if (postData.generatedContent && 
+            postData.generatedContent.length > 0 && 
+            postData.sections && 
+            postData.sections.length > 0) {
+          // Content exists and is valid, just set the post
+          setPost({ id: docSnap.id, ...postData });
+          setLoading(false);
+          return; // Exit early, no need to generate
+        }
+        
+        // Set initial post data
         setPost({ id: docSnap.id, ...postData });
         
-        if (!postData.generatedContent) {
-          generateContent(postData);
+        // Only generate if content is missing or invalid
+        if (!postData.generatedContent || postData.generatedContent.length === 0) {
+          await generateContent(postData);
         }
       } else {
         navigate('/blog');
@@ -158,14 +262,26 @@ const BlogPost = () => {
   };
 
   const generateContent = async (postData) => {
+    // If content is already being generated, don't start another generation
+    if (generatingContent) {
+      return;
+    }
+    
     setGeneratingContent(true);
     setError(null);
     
     try {
-      console.log('Attempting to generate content...'); // Debug log
-      console.log('Using backend URL:', BACKEND_URL); // Debug log
-      console.log('Post data:', { title: postData.title, category: postData.category }); // Debug log
-      
+      // Double-check if content already exists in Firebase before making API call
+      const latestDoc = await getDoc(doc(db, 'blogs', id));
+      if (latestDoc.exists()) {
+        const latestData = latestDoc.data();
+        if (latestData.generatedContent && latestData.generatedContent.length > 0) {
+          setPost({ id, ...latestData });
+          setGeneratingContent(false);
+          return; // Exit if content was generated by another instance
+        }
+      }
+
       const response = await axios.post(`${BACKEND_URL}/generate-blog-content`, {
         title: postData.title,
         content: postData.content || 'A blog post about ' + postData.title,
@@ -176,8 +292,6 @@ const BlogPost = () => {
         }
       });
 
-      console.log('Response received:', response.data); // Debug log
-
       if (response.data && response.data.content) {
         // Update Firebase with the generated content
         const docRef = doc(db, 'blogs', id);
@@ -185,7 +299,8 @@ const BlogPost = () => {
           ...postData,
           generatedContent: response.data.content,
           sections: response.data.sections || [],
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
+          isContentGenerated: true // New flag to track generation status
         };
         
         await updateDoc(docRef, updatedPost);
@@ -196,7 +311,7 @@ const BlogPost = () => {
         throw new Error('Invalid response from server');
       }
     } catch (error) {
-      console.error('Error details:', error.response || error); // Debug log
+      console.error('Error generating content:', error);
       setError(error.response?.data?.detail || 'Failed to generate content. Please try again later.');
       setSnackbar({ open: true, message: 'Failed to generate content. Please try again.', severity: 'error' });
     } finally {
@@ -372,75 +487,53 @@ const BlogPost = () => {
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
                 components={{
-                  code({ node, inline, className, children, ...props }) {
+                  img: MarkdownImage,
+                  p: ({ children, ...props }) => (
+                    <Typography component="p" variant="body1" {...props} sx={{ my: 2 }}>
+                      {children}
+                    </Typography>
+                  ),
+                  table: ({children}) => (
+                    <Box sx={{ overflowX: 'auto', my: 2 }}>
+                      <TableContainer component={Paper} variant="outlined">
+                        <Table size="small">{children}</Table>
+                      </TableContainer>
+                    </Box>
+                  ),
+                  thead: ({children}) => <TableHead>{children}</TableHead>,
+                  tbody: ({children}) => <TableBody>{children}</TableBody>,
+                  tr: ({children}) => <TableRow>{children}</TableRow>,
+                  th: ({children}) => (
+                    <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                      {children}
+                    </TableCell>
+                  ),
+                  td: ({children}) => <TableCell>{children}</TableCell>,
+                  code: ({inline, className, children}) => {
                     const match = /language-(\w+)/.exec(className || '');
                     return !inline && match ? (
-                      <SyntaxHighlighter
-                        style={docco}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      >
+                      <SyntaxHighlighter style={docco} language={match[1]}>
                         {String(children).replace(/\n$/, '')}
                       </SyntaxHighlighter>
                     ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
+                      <code className={className}>{children}</code>
                     );
                   },
-                  table({ node, ...props }) {
-                    return (
-                      <TableContainer component={Paper} sx={{ my: 2 }}>
-                        <Table size="small" {...props} />
-                      </TableContainer>
-                    );
-                  },
-                  thead({ node, ...props }) {
-                    return <TableHead {...props} />;
-                  },
-                  tbody({ node, ...props }) {
-                    return <TableBody {...props} />;
-                  },
-                  tr({ node, ...props }) {
-                    return <TableRow {...props} />;
-                  },
-                  th({ node, ...props }) {
-                    return <TableCell component="th" sx={{ fontWeight: 'bold' }} {...props} />;
-                  },
-                  td({ node, ...props }) {
-                    return <TableCell {...props} />;
-                  },
-                  blockquote({ node, ...props }) {
-                    return (
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          my: 2,
-                          px: 3,
-                          py: 1,
-                          borderLeft: 4,
-                          borderColor: 'primary.main',
-                          bgcolor: 'grey.50',
-                        }}
-                        {...props}
-                      />
-                    );
-                  },
-                  img({ node, ...props }) {
-                    return (
-                      <Box
-                        component="img"
-                        sx={{
-                          maxWidth: '100%',
-                          height: 'auto',
-                          my: 2,
-                          borderRadius: 1,
-                        }}
-                        {...props}
-                      />
-                    );
-                  },
+                  blockquote: ({children}) => (
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        my: 2,
+                        px: 3,
+                        py: 1,
+                        borderLeft: 4,
+                        borderColor: 'primary.main',
+                        bgcolor: 'grey.50',
+                      }}
+                    >
+                      {children}
+                    </Paper>
+                  ),
                 }}
               >
                 {post.generatedContent}
