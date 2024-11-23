@@ -6,15 +6,19 @@
   "framework": "create-react-app",
   "builds": [
     {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build"
-    },
-    {
       "src": "backend/api/*.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/api/$1.py"
+    },
     {
       "src": "/static/(.*)",
       "headers": { "cache-control": "public, max-age=31536000, immutable" },
@@ -38,15 +42,7 @@
       "dest": "/robots.txt"
     },
     {
-      "src": "/api/test-env",
-      "dest": "backend/api/test-env.py"
-    },
-    {
-      "src": "/api/generate-scheduled-post",
-      "dest": "backend/api/generate-scheduled-post.py"
-    },
-    {
-      "src": "/(.*)",
+      "src": "/((?!api/).*)",
       "dest": "/index.html"
     }
   ],
