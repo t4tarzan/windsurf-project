@@ -22,6 +22,7 @@ origins = [
     "http://localhost:3000",  # Local development
     "https://windsurf-project-2ke3-9ltk89v5s-t4tarzans-projects.vercel.app",  # Vercel deployment
     "https://planthealthmeter.com",  # Custom domain
+    "https://www.planthealthmeter.com",  # www subdomain
 ]
 
 print("Configured CORS origins:", origins)  # Debug log
@@ -32,6 +33,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Initialize OpenAI client
