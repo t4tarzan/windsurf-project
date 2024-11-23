@@ -39,3 +39,9 @@ venv/
 env/
 ENV/
 .venv
+
+# Firebase
+serviceAccountKey.json
+*firebase-adminsdk*.json
+backend/serviceAccountKey.json
+backend/*firebase-adminsdk*.json
