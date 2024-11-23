@@ -38,6 +38,10 @@
       "dest": "/robots.txt"
     },
     {
+      "src": "/api/test-env",
+      "dest": "backend/api/test-env.py"
+    },
+    {
       "src": "/api/generate-scheduled-post",
       "dest": "backend/api/generate-scheduled-post.py"
     },
