@@ -4,6 +4,16 @@
   "outputDirectory": "frontend/build",
   "installCommand": "cd frontend && npm install",
   "framework": "create-react-app",
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build"
+    },
+    {
+      "src": "backend/api/*.py",
+      "use": "@vercel/python"
+    }
+  ],
   "routes": [
     {
       "src": "/static/(.*)",
@@ -28,9 +38,18 @@
       "dest": "/robots.txt"
     },
     {
+      "src": "/api/generate-scheduled-post",
+      "dest": "backend/api/generate-scheduled-post.py"
+    },
+    {
       "src": "/(.*)",
-      "headers": { "cache-control": "s-maxage=1, stale-while-revalidate" },
       "dest": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/generate-scheduled-post",
+      "schedule": "0 9,15 * * *"
     }
   ]
 }
