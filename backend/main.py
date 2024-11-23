@@ -17,10 +17,18 @@ load_dotenv()
 
 app = FastAPI(title="Plant Health Meter API")
 
-# Enable CORS
+# Enable CORS with specific origins
+origins = [
+    "http://localhost:3000",  # Local development
+    "https://windsurf-project-2ke3-9ltk89v5s-t4tarzans-projects.vercel.app",  # Vercel deployment
+    "https://planthealthmeter.com",  # Custom domain
+]
+
+print("Configured CORS origins:", origins)  # Debug log
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -124,8 +132,12 @@ async def get_leaderboard():
 @app.post("/generate-blog-content")
 async def generate_blog_content(data: BlogContent):
     try:
+        print(f"Received blog generation request for title: {data.title}")  # Debug log
+        
         if not data.title or not data.content:
             raise HTTPException(status_code=400, detail="Missing required fields")
+
+        print("Using OpenAI API key:", os.getenv('OPENAI_API_KEY')[:10] + "...")  # Debug log (first 10 chars only)
 
         prompt = f"""Create a professional, engaging blog post about "{data.title}" in the style of Medium/Substack articles. Include:
 

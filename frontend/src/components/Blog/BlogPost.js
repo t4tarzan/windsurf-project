@@ -127,6 +127,9 @@ const BlogPost = () => {
   const [success, setSuccess] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
+  // Add backend URL from environment variables
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
   useEffect(() => {
     fetchPost();
   }, [id]);
@@ -159,7 +162,11 @@ const BlogPost = () => {
     setError(null);
     
     try {
-      const response = await axios.post('http://localhost:8000/generate-blog-content', {
+      console.log('Attempting to generate content...'); // Debug log
+      console.log('Using backend URL:', BACKEND_URL); // Debug log
+      console.log('Post data:', { title: postData.title, category: postData.category }); // Debug log
+      
+      const response = await axios.post(`${BACKEND_URL}/generate-blog-content`, {
         title: postData.title,
         content: postData.content || 'A blog post about ' + postData.title,
         category: postData.category
@@ -168,6 +175,8 @@ const BlogPost = () => {
           'Content-Type': 'application/json'
         }
       });
+
+      console.log('Response received:', response.data); // Debug log
 
       if (response.data && response.data.content) {
         // Update Firebase with the generated content
@@ -182,12 +191,14 @@ const BlogPost = () => {
         await updateDoc(docRef, updatedPost);
         setPost({ id, ...updatedPost });
         setSuccess(true);
+        setSnackbar({ open: true, message: 'Content generated successfully!', severity: 'success' });
       } else {
         throw new Error('Invalid response from server');
       }
     } catch (error) {
-      console.error('Error generating content:', error);
+      console.error('Error details:', error.response || error); // Debug log
       setError(error.response?.data?.detail || 'Failed to generate content. Please try again later.');
+      setSnackbar({ open: true, message: 'Failed to generate content. Please try again.', severity: 'error' });
     } finally {
       setGeneratingContent(false);
     }
